@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import { cn } from '@/lib/cn'
-import type { GridSize } from '@/types'
+import { cn } from "@/lib/cn"
+import type { GridSize } from "@/types"
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -13,9 +13,11 @@ export interface GridSizePickerProps {
 // ─── Constants ────────────────────────────────────────────────────────────
 
 const SIZES: { value: GridSize; label: string }[] = [
-  { value: 12, label: '12×12' },
-  { value: 32, label: '32×32' },
-  { value: 64, label: '64×64' },
+  { value: 12, label: "12×12" },
+  { value: 25, label: "25×25" },
+  { value: 32, label: "32×32" },
+  { value: 40, label: "40×40" },
+  { value: 64, label: "64×64" },
 ]
 
 // ─── Component ────────────────────────────────────────────────────────────
@@ -28,7 +30,7 @@ const SIZES: { value: GridSize; label: string }[] = [
  */
 export function GridSizePicker({ value, onChange }: GridSizePickerProps) {
   return (
-    <div className="flex gap-1.5" role="group" aria-label="Grid size">
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Grid size">
       {SIZES.map((size) => {
         const isActive = value === size.value
         return (
@@ -39,14 +41,14 @@ export function GridSizePicker({ value, onChange }: GridSizePickerProps) {
             aria-pressed={isActive}
             className={cn(
               // Base — from DESIGN.md grid pill pattern
-              'border-[1.5px] px-3.5 py-1.5 rounded-md',
-              'font-display font-extrabold text-xs',
-              'cursor-pointer transition-all duration-base',
-              'active:scale-[0.97]',
+              "rounded-md border-[1.5px] px-3.5 py-1.5",
+              "font-display text-xs font-extrabold",
+              "duration-base cursor-pointer transition-all",
+              "active:scale-[0.97]",
               // State
               isActive
-                ? 'bg-brick-blue text-white border-brick-blue'
-                : 'bg-sand-200 text-sand-600 border-sand-300 hover:border-sand-400',
+                ? "border-brick-blue bg-brick-blue text-white"
+                : "border-sand-300 bg-sand-200 text-sand-600 hover:border-sand-400"
             )}
           >
             {size.label}
