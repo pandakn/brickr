@@ -34,6 +34,7 @@ import { SparklesCore } from "@/components/ui/sparkles"
 import { cn } from "@/lib/cn"
 import { exportAsImage } from "@/lib/exportCanvas"
 import type { GridSize } from "@/types"
+import { ToyBrick } from "lucide-react"
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
 
@@ -259,9 +260,12 @@ export default function Page() {
     <div className="flex h-screen flex-col overflow-hidden bg-sand-100">
       {/* ── Top bar ─────────────────────────────────────────────────────── */}
       <header className="flex h-14 shrink-0 items-center border-b border-sand-300 px-6">
-        <span className="font-display text-xl font-black tracking-tight text-brick-red">
-          Brickr
-        </span>
+        <div className="flex items-center gap-1">
+          <ToyBrick className="text-brick-red" />
+          <span className="font-display text-xl font-black tracking-tight text-brick-red">
+            Brickr
+          </span>
+        </div>
 
         {/* Error banner (processing failure) */}
         {processor.error && (
