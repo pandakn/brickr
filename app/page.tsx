@@ -26,9 +26,11 @@ import { useBrickCanvas } from "@/hooks/useBrickCanvas"
 import { useImageProcessor } from "@/hooks/useImageProcessor"
 import { DropZone } from "@/components/upload/DropZone"
 import { BrickCanvas } from "@/components/canvas/BrickCanvas"
+import { BeforeAfterSlider } from "@/components/canvas/BeforeAfterSlider"
 import { ControlPanel } from "@/components/controls/ControlPanel"
 import { StatsPanel } from "@/components/stats/StatsPanel"
 import { SparklesCore } from "@/components/ui/sparkles"
+import { cn } from "@/lib/cn"
 import type { GridSize } from "@/types"
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
@@ -75,6 +77,9 @@ export default function Page() {
   /** Controls the sparkles confetti overlay shown after a completed build. */
   const [showConfetti, setShowConfetti] = useState(false)
 
+  /** When true the canvas area shows BeforeAfterSlider instead of BrickCanvas. */
+  const [showComparison, setShowComparison] = useState(false)
+
   const hasImage = canvas.state.pixelMatrix.length > 0
 
   // ── Sync processor output → canvas state ─────────────────────────────────
@@ -89,15 +94,20 @@ export default function Page() {
   }, [processor.matrix, processor.imageData])
 
   // ── Confetti on build complete ────────────────────────────────────────────
+  // Use rAF to defer the setState call out of the synchronous effect body,
+  // avoiding the "cascading renders" lint rule.
   useEffect(() => {
     if (
       !canvas.state.isBuilding &&
       canvas.state.buildProgress === 1 &&
       hasImage
     ) {
-      setShowConfetti(true)
+      const rafId = requestAnimationFrame(() => setShowConfetti(true))
       const timer = window.setTimeout(() => setShowConfetti(false), 3000)
-      return () => window.clearTimeout(timer)
+      return () => {
+        cancelAnimationFrame(rafId)
+        window.clearTimeout(timer)
+      }
     }
   }, [canvas.state.isBuilding, canvas.state.buildProgress, hasImage])
 
@@ -158,6 +168,7 @@ export default function Page() {
       return null
     })
     setShowConfetti(false)
+    setShowComparison(false)
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -178,6 +189,24 @@ export default function Page() {
           <span className="ml-4 rounded-md bg-brick-red/10 px-3 py-1 font-display text-xs font-bold text-brick-red">
             {processor.error}
           </span>
+        )}
+
+        {/* Compare toggle — only when an image is loaded */}
+        {hasImage && originalSrc && (
+          <button
+            type="button"
+            onClick={() => setShowComparison((v) => !v)}
+            className={cn(
+              "ml-auto font-display text-xs font-extrabold",
+              "rounded-md border-2 px-4 py-1.5",
+              "duration-micro transition-all active:scale-[0.97]",
+              showComparison
+                ? "border-brick-blue bg-brick-blue text-white"
+                : "border-brick-blue bg-transparent text-brick-blue hover:bg-brick-blue/10"
+            )}
+          >
+            {showComparison ? "← Canvas" : "Compare →"}
+          </button>
         )}
       </header>
 
@@ -203,6 +232,9 @@ export default function Page() {
           pieceCounts={processor.pieceCounts}
           isBuilding={canvas.state.isBuilding}
           buildProgress={canvas.state.buildProgress}
+          matrix={hasImage ? canvas.state.pixelMatrix : null}
+          gridSize={canvas.state.gridSize}
+          renderMode={canvas.state.renderMode}
         />
 
         {/* ── Canvas area — padded to clear both side panels ────────────── */}
@@ -223,7 +255,7 @@ export default function Page() {
             </div>
           )}
 
-          {/* ── Image loaded: brick canvas ───────────────────────────── */}
+          {/* ── Image loaded: brick canvas or before/after ────────────── */}
           {hasImage && !processor.isProcessing && (
             <div className="relative flex h-full w-full items-center justify-center">
               {/* Completion confetti overlay */}
@@ -241,15 +273,34 @@ export default function Page() {
                 </div>
               )}
 
-              <BrickCanvas
-                matrix={canvas.state.pixelMatrix}
-                renderMode={canvas.state.renderMode}
-                showGrid={canvas.state.showGrid}
-                cellSize={16}
-                isBuilding={canvas.state.isBuilding}
-                buildKey={canvas.buildKey}
-                onCellClick={canvas.handleCellClick}
-              />
+              {/* Before/after comparison slider */}
+              {showComparison && originalSrc ? (
+                <BeforeAfterSlider
+                  originalSrc={originalSrc}
+                  legoCanvas={
+                    <BrickCanvas
+                      matrix={canvas.state.pixelMatrix}
+                      renderMode={canvas.state.renderMode}
+                      showGrid={canvas.state.showGrid}
+                      cellSize={16}
+                      isBuilding={canvas.state.isBuilding}
+                      buildKey={canvas.buildKey}
+                      onCellClick={canvas.handleCellClick}
+                    />
+                  }
+                  className="h-full max-h-[calc(100vh-4rem)] w-full"
+                />
+              ) : (
+                <BrickCanvas
+                  matrix={canvas.state.pixelMatrix}
+                  renderMode={canvas.state.renderMode}
+                  showGrid={canvas.state.showGrid}
+                  cellSize={16}
+                  isBuilding={canvas.state.isBuilding}
+                  buildKey={canvas.buildKey}
+                  onCellClick={canvas.handleCellClick}
+                />
+              )}
             </div>
           )}
         </div>
