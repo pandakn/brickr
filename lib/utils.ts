@@ -1,6 +1,3 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+// Re-export cn from the canonical location.
+// shadcn and Aceternity components import from here — do not remove.
+export { cn } from "./cn"

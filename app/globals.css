@@ -2,128 +2,193 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* ═══════════════════════════════════════════════════════════════════
+   Brickr — Tailwind v4 CSS-first configuration
+   All design tokens live here. See DESIGN.md for the spec.
+═══════════════════════════════════════════════════════════════════ */
 
+/* ── 1. Map CSS variables → Tailwind utilities (shadcn + font compat) ── */
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+  /* Fonts — values come from CSS custom properties set by next/font */
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  /* Keep font-sans pointing to Nunito so shadcn components look right */
+  --font-sans: var(--font-display);
+
+  /* shadcn semantic color utilities (reference runtime CSS variables) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Border radius — Brickr values override shadcn calc() defaults */
+  --radius-stud: 4px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
 }
 
+/* ── 2. Static Brickr palette & design tokens ── */
+@theme {
+  /* Brick brand colors */
+  --color-brick-red: #e3000b;
+  --color-brick-blue: #006cb7;
+  --color-brick-yellow: #ffd700;
+  --color-brick-green: #00a650;
+  --color-brick-orange: #f47216;
+  --color-brick-black: #1a1a1a;
+  --color-brick-white: #fafaf8;
+  --color-brick-gray: #8b8b8b;
+
+  /* Sand neutral palette */
+  --color-sand-50: #fdfaf5;
+  --color-sand-100: #f5f0e8;
+  --color-sand-200: #ede5d4;
+  --color-sand-300: #e8e0d0;
+  --color-sand-400: #c8bba8;
+  --color-sand-500: #9e9080;
+  --color-sand-600: #6b5f52;
+  --color-sand-700: #3d332a;
+  --color-sand-800: #1a1a1a;
+
+  /* Elevation shadows */
+  --shadow-flat: none;
+  --shadow-raised:
+    0 1px 4px rgba(0, 0, 0, 0.07), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+  --shadow-floating:
+    0 4px 20px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+  --shadow-stud:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* Motion — transition durations */
+  --duration-snap: 80ms;
+  --duration-micro: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+
+  /* Motion — easing functions */
+  --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-base: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Keyframe animation shorthands */
+  --animate-stud-pop: stud-pop 200ms ease-in-out;
+  --animate-build-in: build-in 80ms ease-out forwards;
+  --animate-confetti-drop: confetti-drop 800ms ease-in forwards;
+}
+
+/* ── 3. Keyframes ── */
+@keyframes stud-pop {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.08) translateY(-2px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes build-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes confetti-drop {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(60px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* ── 4. Base CSS variables — Brickr light palette (no dark mode) ── */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+  /* Page & surface */
+  --background: #f5f0e8; /* sand-100 */
+  --foreground: #1a1a1a; /* sand-800 */
+  --card: #f5f0e8;
+  --card-foreground: #1a1a1a;
+  --popover: #f5f0e8;
+  --popover-foreground: #1a1a1a;
+
+  /* Interactive */
+  --primary: #e3000b; /* brick-red */
+  --primary-foreground: #fafaf8; /* brick-white */
+  --secondary: #ede5d4; /* sand-200 */
+  --secondary-foreground: #3d332a; /* sand-700 */
+  --muted: #ede5d4; /* sand-200 */
+  --muted-foreground: #6b5f52; /* sand-600 */
+  --accent: #e8e0d0; /* sand-300 */
+  --accent-foreground: #1a1a1a;
+  --destructive: #e3000b; /* brick-red */
+
+  /* Borders & inputs */
+  --border: #e8e0d0; /* sand-300 */
+  --input: #e8e0d0;
+  --ring: #006cb7; /* brick-blue */
+
+  /* Sidebar (used by some shadcn layouts) */
+  --sidebar: #ede5d4;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #e3000b;
+  --sidebar-primary-foreground: #fafaf8;
+  --sidebar-accent: #e8e0d0;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #e8e0d0;
+  --sidebar-ring: #006cb7;
+
+  /* Charts — LEGO brand colors */
+  --chart-1: #e3000b;
+  --chart-2: #006cb7;
+  --chart-3: #ffd700;
+  --chart-4: #00a650;
+  --chart-5: #f47216;
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-}
-
+/* ── 5. Base layer ── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
-    @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    }
+    @apply bg-sand-100 text-sand-800 font-display antialiased;
+  }
 }
