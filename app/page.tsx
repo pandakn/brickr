@@ -35,6 +35,7 @@ import { cn } from "@/lib/cn"
 import { exportAsImage } from "@/lib/exportCanvas"
 import type { GridSize } from "@/types"
 import { ToyBrick } from "lucide-react"
+import { fetchImageAsFile } from "@/lib/imageLoader"
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
 
@@ -87,6 +88,11 @@ export default function Page() {
   /** Controls the mobile StatsPanel bottom-sheet visibility. */
   const [showMobileStats, setShowMobileStats] = useState(false)
 
+  /** URL input state */
+  const [urlInput, setUrlInput] = useState("")
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false)
+  const [urlError, setUrlError] = useState<string | null>(null)
+
   const hasImage = canvas.state.pixelMatrix.length > 0
 
   // ── Sync processor output → canvas state ─────────────────────────────────
@@ -135,6 +141,8 @@ export default function Page() {
     setShowConfetti(false)
     setShowComparison(false)
     setShowMobileStats(false)
+    setUrlInput("")
+    setUrlError(null)
   }
 
   // ── Keyboard shortcuts ─────────────────────────────────────────────────────
@@ -204,6 +212,69 @@ export default function Page() {
     return () => window.removeEventListener("keydown", onKeyDown)
   }, []) // empty deps — listener registered once, values read via ref
 
+  const handleFile = useCallback(
+    (file: File) => {
+      sourceFileRef.current = file
+      setOriginalSrc((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return URL.createObjectURL(file)
+      })
+      void processor.process(
+        file,
+        canvas.state.gridSize,
+        canvas.state.messiness
+      )
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [processor.process, canvas.state.gridSize, canvas.state.messiness]
+  )
+
+  // ── Global paste listener — detect image URLs ─────────────────────────────
+  useEffect(() => {
+    const onPaste = async (e: ClipboardEvent) => {
+      // If an image is already loaded, don't hijack paste (maybe user is typing in a future input)
+      if (hasImage || processor.isProcessing) return
+
+      const text = e.clipboardData?.getData("text")
+      if (!text) return
+
+      // Basic URL detection
+      if (text.startsWith("http") || text.startsWith("data:image")) {
+        try {
+          const file = await fetchImageAsFile(text)
+          handleFile(file)
+        } catch {
+          // Silent fail for global paste — user might be pasting something else
+        }
+      }
+    }
+
+    window.addEventListener("paste", onPaste)
+    return () => window.removeEventListener("paste", onPaste)
+  }, [hasImage, processor.isProcessing, handleFile])
+
+  const handleUrlSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!urlInput || processor.isProcessing || isLoadingUrl) return
+
+    setIsLoadingUrl(true)
+    setUrlError(null)
+
+    try {
+      const file = await fetchImageAsFile(urlInput)
+      handleFile(file)
+      setUrlInput("")
+    } catch (err) {
+      setUrlError(
+        err instanceof Error
+          ? err.message
+          : "Could not load image. It might be blocked by CORS."
+      )
+    } finally {
+      setIsLoadingUrl(false)
+    }
+  }
+
   // ── Confetti on build complete ────────────────────────────────────────────
   // Use rAF to defer the setState call out of the synchronous effect body,
   // avoiding the "cascading renders" lint rule.
@@ -221,25 +292,6 @@ export default function Page() {
       }
     }
   }, [canvas.state.isBuilding, canvas.state.buildProgress, hasImage])
-
-  // ── File handler ──────────────────────────────────────────────────────────
-
-  const handleFile = useCallback(
-    (file: File) => {
-      sourceFileRef.current = file
-      setOriginalSrc((prev) => {
-        if (prev) URL.revokeObjectURL(prev)
-        return URL.createObjectURL(file)
-      })
-      void processor.process(
-        file,
-        canvas.state.gridSize,
-        canvas.state.messiness
-      )
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [processor.process, canvas.state.gridSize, canvas.state.messiness]
-  )
 
   // ── Cell click with sound ─────────────────────────────────────────────────
   // Destructure stable callbacks so the useCallback dep array is precise.
@@ -348,8 +400,51 @@ export default function Page() {
         <div className="flex h-full items-center justify-center px-4 pb-[60vh] lg:px-0 lg:pr-64 lg:pb-0 lg:pl-72">
           {/* ── No image: drop zone ───────────────────────────────────── */}
           {!hasImage && !processor.isProcessing && (
-            <div className="w-full max-w-xl">
-              <DropZone onFile={handleFile} />
+            <div className="flex w-full max-w-xl flex-col gap-6 animate-in fade-in zoom-in slide-in-from-bottom-8 duration-base">
+              {/* URL Input Section */}
+              <div className="flex flex-col items-center gap-3">
+                <p className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
+                  — load from link —
+                </p>
+                <form
+                  onSubmit={handleUrlSubmit}
+                  className="flex w-full overflow-hidden rounded-md border border-sand-300 bg-sand-100/50 shadow-sm backdrop-blur-sm"
+                >
+                  <input
+                    type="url"
+                    placeholder="Paste an image URL here..."
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    className="w-full bg-transparent px-4 py-2.5 font-display text-sm text-sand-700 outline-hidden placeholder:text-sand-400"
+                    onKeyDown={(e) => e.stopPropagation()}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!urlInput || processor.isProcessing || isLoadingUrl}
+                    className={cn(
+                      "px-6 py-2.5 font-display text-sm font-extrabold transition-all",
+                      !urlInput || processor.isProcessing || isLoadingUrl
+                        ? "bg-sand-200 text-sand-400"
+                        : "bg-brick-red text-white hover:bg-brick-red/90 active:scale-[0.98]"
+                    )}
+                  >
+                    {isLoadingUrl ? "..." : "Load"}
+                  </button>
+                </form>
+                {urlError && (
+                  <p className="rounded-md bg-brick-red/10 px-3 py-1.5 font-display text-xs font-bold text-brick-red">
+                    {urlError}
+                  </p>
+                )}
+              </div>
+
+              {/* DropZone Section */}
+              <div className="flex flex-col items-center gap-3">
+                <p className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
+                  — or upload file —
+                </p>
+                <DropZone onFile={handleFile} />
+              </div>
             </div>
           )}
 

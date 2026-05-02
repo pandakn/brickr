@@ -20,8 +20,6 @@ import { useDropzone, type FileRejection } from "react-dropzone"
 import { BackgroundBeams } from "@/components/ui/background-beams"
 import { cn } from "@/lib/cn"
 
-// ─── Constants ────────────────────────────────────────────────────────────
-
 const ACCEPTED_TYPES = {
   "image/jpeg": [".jpg", ".jpeg"],
   "image/png": [".png"],
@@ -160,6 +158,10 @@ export function DropZone({ onFile }: DropZoneProps) {
 
         <p className="mt-1 font-display text-sm text-sand-500">
           or click to browse
+        </p>
+
+        <p className="mt-3 font-mono text-[10px] tracking-widest text-sand-400 uppercase">
+          JPG · PNG · WebP · max 10&nbsp;MB
         </p>
 
         <p className="mt-3 font-mono text-[10px] tracking-widest text-sand-400 uppercase">
