@@ -31,6 +31,11 @@ export interface StatsPanelProps {
   matrix: (LegoColor | null)[][] | null
   gridSize: GridSize
   renderMode: RenderMode
+  /**
+   * On mobile (< lg) the panel is hidden by default.
+   * Set to true to make it visible as a bottom sheet on small screens.
+   */
+  mobileVisible?: boolean
 }
 
 // ─── Component ────────────────────────────────────────────────────────────
@@ -42,6 +47,7 @@ export function StatsPanel({
   matrix,
   gridSize,
   renderMode,
+  mobileVisible = false,
 }: StatsPanelProps) {
   const totalPieces = useMemo(
     () => pieceCounts.reduce((sum, pc) => sum + pc.count, 0),
@@ -65,14 +71,21 @@ export function StatsPanel({
   return (
     <div
       className={cn(
-        "fixed top-1/2 right-4 z-20 -translate-y-1/2",
-        "w-56",
+        // Shared
         "bg-sand-100/90 backdrop-blur-md",
         "border border-sand-300",
-        "rounded-xl shadow-floating",
-        "p-5",
+        "z-20 p-5 shadow-floating",
         "duration-base transition-all",
-        "max-h-[calc(100vh-2rem)] overflow-y-auto"
+        // ── Mobile: bottom sheet, hidden unless mobileVisible ─────────────
+        "fixed right-0 bottom-0 left-0",
+        "max-h-[70vh] overflow-y-auto rounded-t-xl",
+        mobileVisible ? "translate-y-0" : "translate-y-full",
+        // ── Desktop: right sidebar ────────────────────────────────────────
+        "lg:translate-y-0", // always un-translated on desktop
+        "lg:right-4 lg:bottom-auto lg:left-auto",
+        "lg:top-1/2 lg:-translate-y-1/2",
+        "lg:w-56 lg:rounded-xl",
+        "lg:max-h-[calc(100vh-2rem)]"
       )}
     >
       {/* ── Total count ─────────────────────────────────────────────────── */}

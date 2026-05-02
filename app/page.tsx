@@ -24,6 +24,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useBrickCanvas } from "@/hooks/useBrickCanvas"
 import { useImageProcessor } from "@/hooks/useImageProcessor"
+import { useSound } from "@/hooks/useSound"
 import { DropZone } from "@/components/upload/DropZone"
 import { BrickCanvas } from "@/components/canvas/BrickCanvas"
 import { BeforeAfterSlider } from "@/components/canvas/BeforeAfterSlider"
@@ -31,6 +32,7 @@ import { ControlPanel } from "@/components/controls/ControlPanel"
 import { StatsPanel } from "@/components/stats/StatsPanel"
 import { SparklesCore } from "@/components/ui/sparkles"
 import { cn } from "@/lib/cn"
+import { exportAsImage } from "@/lib/exportCanvas"
 import type { GridSize } from "@/types"
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
@@ -67,6 +69,7 @@ function LoadingGrid({ gridSize }: { gridSize: GridSize }) {
 export default function Page() {
   const canvas = useBrickCanvas()
   const processor = useImageProcessor()
+  const sound = useSound()
 
   /** The last file the user uploaded — kept so we can reprocess on settings change. */
   const sourceFileRef = useRef<File | null>(null)
@@ -79,6 +82,9 @@ export default function Page() {
 
   /** When true the canvas area shows BeforeAfterSlider instead of BrickCanvas. */
   const [showComparison, setShowComparison] = useState(false)
+
+  /** Controls the mobile StatsPanel bottom-sheet visibility. */
+  const [showMobileStats, setShowMobileStats] = useState(false)
 
   const hasImage = canvas.state.pixelMatrix.length > 0
 
@@ -93,50 +99,8 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [processor.matrix, processor.imageData])
 
-  // ── Confetti on build complete ────────────────────────────────────────────
-  // Use rAF to defer the setState call out of the synchronous effect body,
-  // avoiding the "cascading renders" lint rule.
-  useEffect(() => {
-    if (
-      !canvas.state.isBuilding &&
-      canvas.state.buildProgress === 1 &&
-      hasImage
-    ) {
-      const rafId = requestAnimationFrame(() => setShowConfetti(true))
-      const timer = window.setTimeout(() => setShowConfetti(false), 3000)
-      return () => {
-        cancelAnimationFrame(rafId)
-        window.clearTimeout(timer)
-      }
-    }
-  }, [canvas.state.isBuilding, canvas.state.buildProgress, hasImage])
-
-  // ── File handler ──────────────────────────────────────────────────────────
-
-  const handleFile = useCallback(
-    (file: File) => {
-      sourceFileRef.current = file
-
-      // Revoke the previous object URL to avoid memory leaks
-      setOriginalSrc((prev) => {
-        if (prev) URL.revokeObjectURL(prev)
-        return URL.createObjectURL(file)
-      })
-
-      void processor.process(
-        file,
-        canvas.state.gridSize,
-        canvas.state.messiness
-      )
-    },
-    // Inline reference to canvas.state values is intentional:
-    // these are read at call-time from the closure, which is recreated
-    // whenever gridSize or messiness changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [processor.process, canvas.state.gridSize, canvas.state.messiness]
-  )
-
-  // ── Settings change handlers (reprocess if a file is loaded) ─────────────
+  // ── Settings change + reset handlers ──────────────────────────────────────
+  // Defined BEFORE the keyboard-shortcut block so kbRef can reference handleReset.
 
   const handleGridSizeChange = (size: GridSize) => {
     canvas.setGridSize(size)
@@ -169,7 +133,125 @@ export default function Page() {
     })
     setShowConfetti(false)
     setShowComparison(false)
+    setShowMobileStats(false)
   }
+
+  // ── Keyboard shortcuts ─────────────────────────────────────────────────────
+  // Uses the "stable callback ref" pattern: a no-deps useEffect writes current
+  // values into a ref after every render; a once-only useEffect reads from the
+  // ref so the event listener is registered only once (no stale closures).
+  const kbRef = useRef({
+    toggleGrid: canvas.toggleGrid,
+    startBuild: canvas.startBuild,
+    handleReset: () => {},
+    isBuilding: canvas.state.isBuilding,
+    hasImage: false,
+    pixelMatrix: canvas.state.pixelMatrix,
+    renderMode: canvas.state.renderMode,
+  })
+
+  // Runs after every render — safe to write to ref here (not during render)
+  useEffect(() => {
+    kbRef.current = {
+      toggleGrid: canvas.toggleGrid,
+      startBuild: canvas.startBuild,
+      handleReset,
+      isBuilding: canvas.state.isBuilding,
+      hasImage,
+      pixelMatrix: canvas.state.pixelMatrix,
+      renderMode: canvas.state.renderMode,
+    }
+  })
+
+  // Registered once — reads from the always-current ref
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const t = e.target as HTMLElement
+      if (
+        t.isContentEditable ||
+        t.tagName === "INPUT" ||
+        t.tagName === "TEXTAREA" ||
+        t.tagName === "SELECT" ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey
+      )
+        return
+
+      const kb = kbRef.current
+      switch (e.key.toLowerCase()) {
+        case "g":
+          e.preventDefault()
+          kb.toggleGrid()
+          break
+        case "b":
+          e.preventDefault()
+          if (kb.hasImage && !kb.isBuilding) kb.startBuild()
+          break
+        case "r":
+          e.preventDefault()
+          kb.handleReset()
+          break
+        case "e":
+          e.preventDefault()
+          if (kb.hasImage) exportAsImage(kb.pixelMatrix, kb.renderMode, 16)
+          break
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, []) // empty deps — listener registered once, values read via ref
+
+  // ── Confetti on build complete ────────────────────────────────────────────
+  // Use rAF to defer the setState call out of the synchronous effect body,
+  // avoiding the "cascading renders" lint rule.
+  useEffect(() => {
+    if (
+      !canvas.state.isBuilding &&
+      canvas.state.buildProgress === 1 &&
+      hasImage
+    ) {
+      const rafId = requestAnimationFrame(() => setShowConfetti(true))
+      const timer = window.setTimeout(() => setShowConfetti(false), 3000)
+      return () => {
+        cancelAnimationFrame(rafId)
+        window.clearTimeout(timer)
+      }
+    }
+  }, [canvas.state.isBuilding, canvas.state.buildProgress, hasImage])
+
+  // ── File handler ──────────────────────────────────────────────────────────
+
+  const handleFile = useCallback(
+    (file: File) => {
+      sourceFileRef.current = file
+      setOriginalSrc((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return URL.createObjectURL(file)
+      })
+      void processor.process(
+        file,
+        canvas.state.gridSize,
+        canvas.state.messiness
+      )
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [processor.process, canvas.state.gridSize, canvas.state.messiness]
+  )
+
+  // ── Cell click with sound ─────────────────────────────────────────────────
+  // Destructure stable callbacks so the useCallback dep array is precise.
+  const { playClick } = sound
+  const { handleCellClick: canvasHandleCell } = canvas
+
+  const handleCellClick = useCallback(
+    (row: number, col: number) => {
+      playClick()
+      canvasHandleCell(row, col)
+    },
+    [playClick, canvasHandleCell]
+  )
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -219,11 +301,13 @@ export default function Page() {
           renderMode={canvas.state.renderMode}
           showGrid={canvas.state.showGrid}
           isBuilding={canvas.state.isBuilding}
+          soundEnabled={sound.soundEnabled}
           hasImage={hasImage}
           onGridSizeChange={handleGridSizeChange}
           onMessinessChange={handleMessinessChange}
           onRenderModeChange={canvas.setRenderMode}
           onGridToggle={canvas.toggleGrid}
+          onSoundToggle={sound.toggleSound}
           onBuild={canvas.startBuild}
           onReset={handleReset}
         />
@@ -235,12 +319,32 @@ export default function Page() {
           matrix={hasImage ? canvas.state.pixelMatrix : null}
           gridSize={canvas.state.gridSize}
           renderMode={canvas.state.renderMode}
+          mobileVisible={showMobileStats}
         />
 
-        {/* ── Canvas area — padded to clear both side panels ────────────── */}
-        {/*   left:  ControlPanel (256 px) + 16 px gap + 16 px breathing = 288 = pl-72  */}
-        {/*   right: StatsPanel   (224 px) + 16 px gap + 16 px breathing = 256 = pr-64  */}
-        <div className="flex h-full items-center justify-center pr-64 pl-72">
+        {/* Mobile stats toggle button — visible only on small screens */}
+        {hasImage && (
+          <button
+            type="button"
+            onClick={() => setShowMobileStats((v) => !v)}
+            className={cn(
+              "fixed right-4 bottom-[calc(60vh+0.75rem)] z-30 lg:hidden",
+              "rounded-full px-4 py-2 shadow-floating",
+              "font-display text-xs font-extrabold",
+              "duration-micro transition-all active:scale-[0.97]",
+              showMobileStats
+                ? "bg-brick-blue text-white"
+                : "border border-sand-300 bg-sand-100/90 text-sand-700"
+            )}
+          >
+            {showMobileStats ? "✕ Stats" : "📊 Stats"}
+          </button>
+        )}
+
+        {/* ── Canvas area ────────────────────────────────────────────────── */}
+        {/* Desktop: pl-72 / pr-64 clears the fixed side panels                */}
+        {/* Mobile:  no side padding; pb-[60vh] lifts content above bottom panel */}
+        <div className="flex h-full items-center justify-center px-4 pb-[60vh] lg:px-0 lg:pr-64 lg:pb-0 lg:pl-72">
           {/* ── No image: drop zone ───────────────────────────────────── */}
           {!hasImage && !processor.isProcessing && (
             <div className="w-full max-w-xl">
@@ -285,7 +389,7 @@ export default function Page() {
                       cellSize={16}
                       isBuilding={canvas.state.isBuilding}
                       buildKey={canvas.buildKey}
-                      onCellClick={canvas.handleCellClick}
+                      onCellClick={handleCellClick}
                     />
                   }
                   className="h-full max-h-[calc(100vh-4rem)] w-full"
@@ -298,7 +402,7 @@ export default function Page() {
                   cellSize={16}
                   isBuilding={canvas.state.isBuilding}
                   buildKey={canvas.buildKey}
-                  onCellClick={canvas.handleCellClick}
+                  onCellClick={handleCellClick}
                 />
               )}
             </div>
