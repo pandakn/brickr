@@ -259,11 +259,8 @@ export default function Page() {
     <div className="flex h-screen flex-col overflow-hidden bg-sand-100">
       {/* ── Top bar ─────────────────────────────────────────────────────── */}
       <header className="flex h-14 shrink-0 items-center border-b border-sand-300 px-6">
-        <span className="font-display text-xl font-black tracking-tight text-sand-800">
+        <span className="font-display text-xl font-black tracking-tight text-brick-red">
           Brickr
-        </span>
-        <span className="ml-2 font-mono text-xs text-sand-500">
-          image → LEGO
         </span>
 
         {/* Error banner (processing failure) */}
