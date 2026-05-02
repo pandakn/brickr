@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 /**
  * useImageProcessor
@@ -16,19 +16,24 @@
  *   await process(file, 32, 20)   // gridSize=32, messiness=20
  */
 
-import { useState, useCallback } from 'react'
-import type { GridSize, LegoColor, PieceCount } from '@/types'
+import { useState, useCallback } from "react"
+import type { GridSize, LegoColor, PieceCount } from "@/types"
 import {
   resizeImage,
   buildPixelMatrix,
   computePieceCounts,
-} from '@/lib/imageProcessor'
+} from "@/lib/imageProcessor"
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
 export type UseImageProcessorReturn = {
   /** The quantised LEGO colour matrix, or null before the first process call. */
   matrix: LegoColor[][] | null
+  /**
+   * The resized ImageData that produced `matrix` (gridSize × gridSize pixels).
+   * Passed to useBrickCanvas.loadImage so it can be stored in BrickState.
+   */
+  imageData: ImageData | null
   /** Per-colour piece counts, sorted by count descending. */
   pieceCounts: PieceCount[]
   /** True while the pipeline is running. */
@@ -41,49 +46,51 @@ export type UseImageProcessorReturn = {
    * Resolves when state has been updated.  Rejects only on unexpected
    * exceptions — normal errors are captured into the `error` field instead.
    */
-  process: (
-    file: File,
-    gridSize: GridSize,
-    messiness: number,
-  ) => Promise<void>
+  process: (file: File, gridSize: GridSize, messiness: number) => Promise<void>
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────
 
 export function useImageProcessor(): UseImageProcessorReturn {
   const [matrix, setMatrix] = useState<LegoColor[][] | null>(null)
+  const [imageData, setImageData] = useState<ImageData | null>(null)
   const [pieceCounts, setPieceCounts] = useState<PieceCount[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const process = useCallback(
-    async (file: File, gridSize: GridSize, messiness: number): Promise<void> => {
+    async (
+      file: File,
+      gridSize: GridSize,
+      messiness: number
+    ): Promise<void> => {
       setIsProcessing(true)
       setError(null)
 
       try {
         // Step 1 — Resize to the target grid resolution
-        const imageData = await resizeImage(file, gridSize)
+        const newImageData = await resizeImage(file, gridSize)
 
         // Step 2 — Quantise pixels to the LEGO palette + apply messiness
-        const newMatrix = buildPixelMatrix(imageData, messiness)
+        const newMatrix = buildPixelMatrix(newImageData, messiness)
 
         // Step 3 — Compute per-colour piece counts
         const counts = computePieceCounts(newMatrix)
 
+        setImageData(newImageData)
         setMatrix(newMatrix)
         setPieceCounts(counts)
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : 'Failed to process image.'
+          err instanceof Error ? err.message : "Failed to process image."
         setError(message)
         // Keep the previous matrix/counts visible so the UI doesn't go blank
       } finally {
         setIsProcessing(false)
       }
     },
-    [], // no external dependencies — pipeline functions are module-level
+    [] // no external dependencies — pipeline functions are module-level
   )
 
-  return { matrix, pieceCounts, isProcessing, error, process }
+  return { matrix, imageData, pieceCounts, isProcessing, error, process }
 }

@@ -1,0 +1,141 @@
+'use client'
+
+/**
+ * BeforeAfterSlider
+ *
+ * Horizontal drag-reveal that shows the original photo on the left and the
+ * LEGO pixel-art canvas on the right.  Both layers are full-size and clipped
+ * using CSS `clip-path: inset()` so layout does not shift during drag.
+ *
+ * Interaction
+ * ───────────
+ * Uses the Pointer Events API with `setPointerCapture` so dragging remains
+ * responsive even when the pointer leaves the element mid-drag.
+ * No external library is required.
+ */
+
+import { useRef, useState, useCallback } from 'react'
+import { cn } from '@/lib/cn'
+
+// ─── Types ────────────────────────────────────────────────────────────────
+
+export interface BeforeAfterSliderProps {
+  /** Object URL (or any valid src) of the original uploaded image. */
+  originalSrc: string
+  /** The fully-rendered BrickCanvas element shown on the right side. */
+  legoCanvas: React.ReactNode
+  className?: string
+}
+
+// ─── Component ────────────────────────────────────────────────────────────
+
+export function BeforeAfterSlider({
+  originalSrc,
+  legoCanvas,
+  className,
+}: BeforeAfterSliderProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  /** 0–100: percentage of the container that shows the original image. */
+  const [splitPct, setSplitPct] = useState(50)
+  const isDragging = useRef(false)
+
+  // ── Pointer handlers ───────────────────────────────────────────────────
+
+  const updateSplit = useCallback((clientX: number) => {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const x = clientX - rect.left
+    setSplitPct(Math.max(2, Math.min(98, (x / rect.width) * 100)))
+  }, [])
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      isDragging.current = true
+      // Capture keeps events flowing even when pointer leaves the element
+      e.currentTarget.setPointerCapture(e.pointerId)
+      updateSplit(e.clientX)
+    },
+    [updateSplit],
+  )
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDragging.current) return
+      updateSplit(e.clientX)
+    },
+    [updateSplit],
+  )
+
+  const handlePointerUp = useCallback(() => {
+    isDragging.current = false
+  }, [])
+
+  // ── Render ─────────────────────────────────────────────────────────────
+
+  return (
+    <div
+      ref={containerRef}
+      className={cn(
+        'relative w-full h-full overflow-hidden rounded-xl select-none',
+        'cursor-col-resize touch-none',
+        className,
+      )}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
+      {/* ── LEGO canvas — full size, base layer ──────────────────────── */}
+      <div className="absolute inset-0 pointer-events-none">
+        {legoCanvas}
+      </div>
+
+      {/* ── Original image — full size, clipped on the right ─────────── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ clipPath: `inset(0 ${100 - splitPct}% 0 0)` }}
+      >
+        <img
+          src={originalSrc}
+          alt="Original image"
+          className="w-full h-full object-cover"
+          draggable={false}
+        />
+      </div>
+
+      {/* ── Divider line ─────────────────────────────────────────────── */}
+      <div
+        className="absolute inset-y-0 w-0.5 bg-white shadow-floating pointer-events-none"
+        style={{ left: `${splitPct}%`, transform: 'translateX(-50%)' }}
+      >
+        {/* Drag handle circle — centred on the divider */}
+        <div
+          className={cn(
+            'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+            'flex h-9 w-9 items-center justify-center',
+            'rounded-full bg-white shadow-floating',
+          )}
+          aria-hidden="true"
+        >
+          {/* Two parallel vertical bars — the classic drag affordance */}
+          <div className="flex gap-1">
+            <div className="h-4 w-0.5 rounded-full bg-sand-400" />
+            <div className="h-4 w-0.5 rounded-full bg-sand-400" />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Corner labels ─────────────────────────────────────────────── */}
+      <div className="pointer-events-none absolute left-3 top-3 z-10">
+        <span className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-white/80">
+          Original
+        </span>
+      </div>
+      <div className="pointer-events-none absolute right-3 top-3 z-10">
+        <span className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-white/80">
+          LEGO
+        </span>
+      </div>
+    </div>
+  )
+}
