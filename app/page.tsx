@@ -32,10 +32,11 @@ import { ControlPanel } from "@/components/controls/ControlPanel"
 import { StatsPanel } from "@/components/stats/StatsPanel"
 import { SparklesCore } from "@/components/ui/sparkles"
 import { cn } from "@/lib/cn"
-import { exportAsImage } from "@/lib/exportCanvas"
+import { exportAsImage, exportBuildGuide } from "@/lib/exportCanvas"
 import type { GridSize } from "@/types"
 import { ToyBrick } from "lucide-react"
 import { fetchImageAsFile } from "@/lib/imageLoader"
+import { Kbd } from "@/components/ui/kbd"
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
 
@@ -157,6 +158,8 @@ export default function Page() {
     hasImage: false,
     pixelMatrix: canvas.state.pixelMatrix,
     renderMode: canvas.state.renderMode,
+    hasOriginalSrc: false,
+    gridSize: 32 as GridSize,
   })
 
   // Runs after every render — safe to write to ref here (not during render)
@@ -169,6 +172,8 @@ export default function Page() {
       hasImage,
       pixelMatrix: canvas.state.pixelMatrix,
       renderMode: canvas.state.renderMode,
+      hasOriginalSrc: !!originalSrc,
+      gridSize: canvas.state.gridSize,
     }
   })
 
@@ -188,29 +193,45 @@ export default function Page() {
         return
 
       const kb = kbRef.current
-      switch (e.key.toLowerCase()) {
-        case "g":
+      switch (e.code) {
+        case "KeyG":
           e.preventDefault()
           kb.toggleGrid()
           break
-        case "b":
-          e.preventDefault()
-          if (kb.hasImage && !kb.isBuilding) kb.startBuild()
+        case "KeyB":
+          if (kb.hasImage && !kb.isBuilding) {
+            e.preventDefault()
+            kb.startBuild()
+          }
           break
-        case "r":
+        case "KeyR":
           e.preventDefault()
           kb.handleReset()
           break
-        case "e":
-          e.preventDefault()
-          if (kb.hasImage) exportAsImage(kb.pixelMatrix, kb.renderMode, 16)
+        case "KeyE":
+          if (kb.hasImage) {
+            e.preventDefault()
+            exportAsImage(kb.pixelMatrix, kb.renderMode, 16)
+          }
+          break
+        case "KeyC":
+          if (kb.hasImage && kb.hasOriginalSrc) {
+            e.preventDefault()
+            setShowComparison((v) => !v)
+          }
+          break
+        case "KeyD":
+          if (kb.hasImage) {
+            e.preventDefault()
+            exportBuildGuide(kb.pixelMatrix, kb.gridSize)
+          }
           break
       }
     }
 
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, []) // empty deps — listener registered once, values read via ref
+  }, [setShowComparison]) // stable dep
 
   const handleFile = useCallback(
     (file: File) => {
@@ -332,7 +353,7 @@ export default function Page() {
             type="button"
             onClick={() => setShowComparison((v) => !v)}
             className={cn(
-              "ml-auto font-display text-xs font-extrabold",
+              "ml-auto flex items-center gap-2 font-display text-xs font-extrabold",
               "rounded-md border-2 px-4 py-1.5",
               "duration-micro transition-all active:scale-[0.97]",
               showComparison
@@ -340,7 +361,11 @@ export default function Page() {
                 : "border-brick-blue bg-transparent text-brick-blue hover:bg-brick-blue/10"
             )}
           >
-            {showComparison ? "← Canvas" : "Compare →"}
+            <span>{showComparison ? "← Canvas" : "Compare →"}</span>
+            <Kbd className={cn(
+              "transition-colors",
+              showComparison ? "border-white/20 bg-white/10 text-white" : "border-brick-blue/20 bg-brick-blue/5 text-brick-blue"
+            )}>C</Kbd>
           </button>
         )}
       </header>

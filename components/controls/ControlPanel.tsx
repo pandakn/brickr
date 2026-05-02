@@ -26,6 +26,7 @@ import { cn } from "@/lib/cn"
 import type { GridSize, RenderMode } from "@/types"
 import { GridSizePicker } from "./GridSizePicker"
 import { MessinessSlider } from "./MessinessSlider"
+import { Kbd } from "@/components/ui/kbd"
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -161,7 +162,7 @@ export function ControlPanel({
         onClick={onGridToggle}
         aria-pressed={showGrid}
         className={cn(
-          "w-full rounded-md border-[1.5px] px-3.5 py-2",
+          "flex w-full items-center justify-between rounded-md border-[1.5px] px-3.5 py-2",
           "font-display text-xs font-extrabold",
           "duration-base cursor-pointer transition-all active:scale-[0.97]",
           showGrid
@@ -169,7 +170,11 @@ export function ControlPanel({
             : "border-sand-300 bg-sand-200 text-sand-600 hover:border-sand-400"
         )}
       >
-        {showGrid ? "✦ Grid lines on" : "○ Grid lines off"}
+        <span>{showGrid ? "✦ Grid lines on" : "○ Grid lines off"}</span>
+        <Kbd className={cn(
+          "transition-colors",
+          showGrid ? "border-brick-blue/20 bg-brick-blue/5 text-brick-blue" : "border-sand-400/20 bg-sand-300/50 text-sand-500"
+        )}>G</Kbd>
       </button>
 
       {/* ── Sound toggle ────────────────────────────────────────────────── */}
@@ -216,7 +221,7 @@ export function ControlPanel({
           onClick={onBuild}
           disabled={!hasImage || isBuilding}
           className={cn(
-            "w-full font-display text-sm font-extrabold",
+            "group flex w-full items-center justify-between font-display text-sm font-extrabold",
             "bg-brick-red text-white",
             "rounded-md px-5 py-2.5",
             "duration-micro transition-all",
@@ -224,7 +229,10 @@ export function ControlPanel({
             "disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
           )}
         >
-          {isBuilding ? "Building…" : "Build it ▶"}
+          <span>{isBuilding ? "Building…" : "Build it ▶"}</span>
+          {!isBuilding && hasImage && (
+            <Kbd className="border-white/20 bg-white/10 text-white">B</Kbd>
+          )}
         </button>
 
         {/* Secondary — Reset */}
@@ -232,14 +240,15 @@ export function ControlPanel({
           type="button"
           onClick={onReset}
           className={cn(
-            "w-full font-display text-sm font-extrabold",
+            "flex items-center justify-between font-display text-sm font-extrabold",
             "bg-sand-300 text-sand-800",
             "rounded-md px-5 py-2.5",
             "hover:bg-sand-400 active:scale-[0.97]",
             "duration-micro transition-all"
           )}
         >
-          Reset
+          <span>Reset</span>
+          <Kbd className="border-sand-800/10 bg-sand-800/5 text-sand-800">R</Kbd>
         </button>
       </div>
 

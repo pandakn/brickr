@@ -20,6 +20,7 @@ import { cn } from "@/lib/cn"
 import type { GridSize, LegoColor, PieceCount, RenderMode } from "@/types"
 import { exportAsImage, exportBuildGuide } from "@/lib/exportCanvas"
 import { ColorBreakdown } from "./ColorBreakdown"
+import { Kbd } from "@/components/ui/kbd"
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -154,14 +155,15 @@ export function StatsPanel({
               type="button"
               onClick={() => exportAsImage(matrix, renderMode, 16)}
               className={cn(
-                "w-full rounded-md border-[1.5px] px-3 py-2",
+                "flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2",
                 "font-display text-xs font-extrabold text-sand-700",
                 "border-sand-300 bg-sand-200",
                 "hover:bg-sand-300 active:scale-[0.97]",
                 "duration-micro transition-all"
               )}
             >
-              ↓ Download art
+              <span>↓ Download art</span>
+              <Kbd className="border-sand-400/20 bg-sand-300/50 text-sand-500">E</Kbd>
             </button>
 
             {/* Download labeled build guide PNG */}
@@ -169,14 +171,15 @@ export function StatsPanel({
               type="button"
               onClick={() => exportBuildGuide(matrix, gridSize)}
               className={cn(
-                "w-full rounded-md border-[1.5px] px-3 py-2",
+                "flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2",
                 "font-display text-xs font-extrabold text-sand-700",
                 "border-sand-300 bg-sand-200",
                 "hover:bg-sand-300 active:scale-[0.97]",
                 "duration-micro transition-all"
               )}
             >
-              ↓ Download guide
+              <span>↓ Download guide</span>
+              <Kbd className="border-sand-400/20 bg-sand-300/50 text-sand-500">D</Kbd>
             </button>
           </div>
         </>
