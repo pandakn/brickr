@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import { cn } from "@/lib/cn"
-import type { LegoColor, RenderMode } from "@/types"
+import { cn } from '@/lib/cn'
+import type { LegoColor, RenderMode } from '@/types'
 
 export interface StudCellProps {
   color: LegoColor | null
@@ -43,11 +43,11 @@ export function StudCell({
         tabIndex={0}
         aria-label={color.name}
         className={cn(
-          "relative flex items-center justify-center",
-          "rounded-stud shadow-stud",
-          "cursor-pointer select-none",
+          'relative flex items-center justify-center',
+          'rounded-stud shadow-stud',
+          'cursor-pointer select-none',
           // Keyframe-only hover per AGENTS.md motion rules
-          "hover:animate-stud-pop"
+          'hover:animate-stud-pop'
         )}
         style={{
           width: size,
@@ -56,13 +56,13 @@ export function StudCell({
         }}
         onClick={onClick}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+          if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             onClick?.()
           }
         }}
       >
-        {renderMode === "stud" && (
+        {renderMode === 'stud' && (
           <div
             aria-hidden="true"
             className="pointer-events-none rounded-full border border-white/40 bg-white/25"

@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { renderHook, act } from "@testing-library/react"
-import { useBrickCanvas } from "./useBrickCanvas"
-import type { LegoColor } from "@/types"
+import type { LegoColor } from '@/types'
+import { act, renderHook } from '@testing-library/react'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { useBrickCanvas } from './useBrickCanvas'
 
-describe("useBrickCanvas", () => {
+describe('useBrickCanvas', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it("should initialize with default state", () => {
+  test('should initialize with default state', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
     expect(result.current.state.gridSize).toBe(32)
@@ -17,7 +17,7 @@ describe("useBrickCanvas", () => {
     expect(result.current.state.isBuilding).toBe(false)
   })
 
-  it("should update grid size", () => {
+  test('should update grid size', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
     act(() => {
@@ -27,7 +27,7 @@ describe("useBrickCanvas", () => {
     expect(result.current.state.gridSize).toBe(64)
   })
 
-  it("should update messiness within bounds", () => {
+  test('should update messiness within bounds', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
     act(() => {
@@ -46,7 +46,7 @@ describe("useBrickCanvas", () => {
     expect(result.current.state.messiness).toBe(0)
   })
 
-  it("should toggle grid", () => {
+  test('should toggle grid', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
     expect(result.current.state.showGrid).toBe(false)
@@ -58,13 +58,13 @@ describe("useBrickCanvas", () => {
     expect(result.current.state.showGrid).toBe(true)
   })
 
-  it("should handle cell click to remove and restore", () => {
+  test('should handle cell click to remove and restore', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
     const mockColor: LegoColor = {
-      id: "1",
-      name: "Red",
-      hex: "#FF0000",
+      id: '1',
+      name: 'Red',
+      hex: '#FF0000',
       lab: [0, 0, 0],
     }
     const mockMatrix = [[mockColor]]
@@ -89,7 +89,7 @@ describe("useBrickCanvas", () => {
     expect(result.current.state.pixelMatrix[0][0]).toEqual(mockColor)
   })
 
-  it("should reset state", () => {
+  test('should reset state', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
     act(() => {

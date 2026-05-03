@@ -1,27 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
-import { DropZone } from './DropZone'
-import React from 'react'
-import { useDropzone } from 'react-dropzone'
+import { act, render, screen } from "@testing-library/react"
+import { useDropzone } from "react-dropzone"
+import { beforeEach, describe, expect, test, vi } from "vitest"
+import { DropZone } from "./DropZone"
 
 // Mock react-dropzone
-vi.mock('react-dropzone', () => ({
-  useDropzone: vi.fn()
+vi.mock("react-dropzone", () => ({
+  useDropzone: vi.fn(),
 }))
 
 // Mock BackgroundBeams
-vi.mock('@/components/ui/background-beams', () => ({
-  BackgroundBeams: () => <div data-testid="background-beams" />
+vi.mock("@/components/ui/background-beams", () => ({
+  BackgroundBeams: () => <div data-testid="background-beams" />,
 }))
 
-describe('DropZone', () => {
+describe("DropZone", () => {
   const mockOnFile = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('renders initial state correctly', () => {
+  test("renders initial state correctly", () => {
     vi.mocked(useDropzone).mockReturnValue({
       getRootProps: () => ({}),
       getInputProps: () => ({}),
@@ -32,7 +31,7 @@ describe('DropZone', () => {
     expect(screen.getByText(/Drop your image here/i)).toBeInTheDocument()
   })
 
-  it('shows "Drop it!" when drag is active', () => {
+  test('shows "Drop it!" when drag is active', () => {
     vi.mocked(useDropzone).mockReturnValue({
       getRootProps: () => ({}),
       getInputProps: () => ({}),
@@ -43,7 +42,7 @@ describe('DropZone', () => {
     expect(screen.getByText(/Drop it!/i)).toBeInTheDocument()
   })
 
-  it('displays error message for too large files', async () => {
+  test("displays error message for too large files", async () => {
     let onDropHandler: any
     vi.mocked(useDropzone).mockImplementation(({ onDrop }: any) => {
       onDropHandler = onDrop
@@ -57,16 +56,21 @@ describe('DropZone', () => {
     render(<DropZone onFile={mockOnFile} />)
 
     await act(async () => {
-      onDropHandler([], [{ 
-        file: {} as File, 
-        errors: [{ code: 'file-too-large', message: '' }] 
-      }])
+      onDropHandler(
+        [],
+        [
+          {
+            file: {} as File,
+            errors: [{ code: "file-too-large", message: "" }],
+          },
+        ]
+      )
     })
 
     expect(screen.getByText(/That file is too large/i)).toBeInTheDocument()
   })
 
-  it('displays error message for invalid file types', async () => {
+  test("displays error message for invalid file types", async () => {
     let onDropHandler: any
     vi.mocked(useDropzone).mockImplementation(({ onDrop }: any) => {
       onDropHandler = onDrop
@@ -80,16 +84,23 @@ describe('DropZone', () => {
     render(<DropZone onFile={mockOnFile} />)
 
     await act(async () => {
-      onDropHandler([], [{ 
-        file: {} as File, 
-        errors: [{ code: 'file-invalid-type', message: '' }] 
-      }])
+      onDropHandler(
+        [],
+        [
+          {
+            file: {} as File,
+            errors: [{ code: "file-invalid-type", message: "" }],
+          },
+        ]
+      )
     })
 
-    expect(screen.getByText(/Only JPG, PNG, and WebP images are supported/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Only JPG, PNG, and WebP images are supported/i)
+    ).toBeInTheDocument()
   })
 
-  it('calls onFile when a valid file is dropped', async () => {
+  test("calls onFile when a valid file is dropped", async () => {
     let onDropHandler: any
     vi.mocked(useDropzone).mockImplementation(({ onDrop }: any) => {
       onDropHandler = onDrop
@@ -102,7 +113,7 @@ describe('DropZone', () => {
 
     render(<DropZone onFile={mockOnFile} />)
 
-    const mockFile = new File([''], 'test.png', { type: 'image/png' })
+    const mockFile = new File([""], "test.png", { type: "image/png" })
     await act(async () => {
       onDropHandler([mockFile], [])
     })

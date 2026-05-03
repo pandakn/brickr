@@ -2,8 +2,8 @@ import "@testing-library/jest-dom"
 import { vi } from "vitest"
 
 // Mock requestAnimationFrame and cancelAnimationFrame
-global.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 0))
-global.cancelAnimationFrame = vi.fn((id) => clearTimeout(id))
+global.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 0) as unknown as number)
+global.cancelAnimationFrame = vi.fn((id) => clearTimeout(id as unknown as NodeJS.Timeout))
 
 // Mock ImageData if not available in jsdom
 if (typeof ImageData === 'undefined') {

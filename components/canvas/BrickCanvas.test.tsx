@@ -1,11 +1,10 @@
-import { describe, it, expect, vi } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
-import { BrickCanvas } from "./BrickCanvas"
-import React from "react"
-import type { LegoColor } from "@/types"
+import type { LegoColor } from '@/types'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, test, vi } from 'vitest'
+import { BrickCanvas } from './BrickCanvas'
 
-describe("BrickCanvas", () => {
-  it("renders empty state when matrix is empty", () => {
+describe('BrickCanvas', () => {
+  test('renders empty state when matrix is empty', () => {
     render(
       <BrickCanvas
         matrix={[]}
@@ -17,15 +16,15 @@ describe("BrickCanvas", () => {
         onCellClick={vi.fn()}
       />
     )
-    expect(screen.getByLabelText("Empty brick canvas")).toBeInTheDocument()
+    expect(screen.getByLabelText('Empty brick canvas')).toBeInTheDocument()
   })
 
-  it("renders a grid of cells and handles clicks", () => {
+  test('renders a grid of cells and handles clicks', () => {
     const onCellClick = vi.fn()
     const mockColor: LegoColor = {
-      id: "red",
-      name: "Red",
-      hex: "#FF0000",
+      id: 'red',
+      name: 'Red',
+      hex: '#FF0000',
       lab: [0, 0, 0],
     }
     const matrix: (LegoColor | null)[][] = [
