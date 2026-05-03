@@ -1,17 +1,26 @@
 'use client'
 
 import { PixelatedCanvas } from '@/components/ui/pixelated-canvas'
-import type { LegoColor } from '@/types'
+import type { LegoColor, RenderMode } from '@/types'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { StudCell } from './StudCell'
 
 export interface BrickCanvasProps {
   matrix: (LegoColor | null)[][]
+  renderMode: RenderMode
   showGrid: boolean
   /**
    * Seed cell size used before the ResizeObserver fires.
    * Typically `Math.floor(availableWidth / gridSize)`.
    */
   cellSize: number
+  isBuilding: boolean
+  /**
+   * Monotonically increasing counter from useBrickCanvas.buildKey.
+   * Changing this value forces all StudCells to remount so their
+   * animate-build-in replays.
+   */
+  buildKey: number
   onCellClick: (row: number, col: number) => void
 }
 
@@ -47,8 +56,11 @@ function matrixToDataUrl(matrix: (LegoColor | null)[][]): string {
 
 export function BrickCanvas({
   matrix,
+  renderMode,
   showGrid,
   cellSize,
+  isBuilding,
+  buildKey,
   onCellClick,
 }: BrickCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -57,10 +69,8 @@ export function BrickCanvas({
   const cols = matrix.length > 0 ? matrix[0].length : 0
   const rows = matrix.length
 
-  // Compute the data URL from the matrix (memoized on buildKey + matrix reference)
   const dataUrl = useMemo(() => matrixToDataUrl(matrix), [matrix])
 
-  // Observe the container to get available width/height
   useEffect(() => {
     if (cols === 0 || rows === 0) return
     const el = containerRef.current
@@ -75,7 +85,6 @@ export function BrickCanvas({
     return () => observer.disconnect()
   }, [cols, rows])
 
-  // Compute cell size for the interaction overlay
   const computedCellSize = useMemo(() => {
     if (
       canvasSize.width === 0 ||
@@ -96,18 +105,14 @@ export function BrickCanvas({
   const gridWidth = cols * computedCellSize
   const gridHeight = rows * computedCellSize
 
-  const handleCanvasClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-      const col = Math.floor(x / computedCellSize)
-      const row = Math.floor(y / computedCellSize)
-      if (row >= 0 && row < rows && col >= 0 && col < cols) {
-        onCellClick(row, col)
-      }
-    },
-    [computedCellSize, rows, cols, onCellClick]
+  const gridStyle = useMemo(
+    () => ({
+      display: 'grid' as const,
+      gridTemplateColumns: `repeat(${cols}, ${computedCellSize}px)`,
+      gap: showGrid ? '1px' : '0px',
+      width: 'fit-content',
+    }),
+    [cols, computedCellSize, showGrid]
   )
 
   if (matrix.length === 0) {
@@ -131,7 +136,7 @@ export function BrickCanvas({
         className="relative"
         style={{ width: gridWidth, height: gridHeight }}
       >
-        {/* PixelatedCanvas renders the LEGO art with dot-grid effect */}
+        {/* PixelatedCanvas — interactive swirl distortion background */}
         <PixelatedCanvas
           src={dataUrl}
           width={gridWidth}
@@ -151,31 +156,30 @@ export function BrickCanvas({
           fadeSpeed={0.08}
           sampleAverage={false}
           objectFit="fill"
-          className="absolute inset-0"
+          className="pointer-events-none absolute inset-0"
         />
 
-        {/* Invisible overlay grid for click interactions */}
+        {/* StudCell grid — LEGO stud visuals, hover, build animation, clicks */}
         <div
-          data-testid="brick-canvas-grid"
           role="grid"
-          className="absolute inset-0 cursor-pointer"
-          onClick={handleCanvasClick}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${cols}, ${computedCellSize}px)`,
-            gridTemplateRows: `repeat(${rows}, ${computedCellSize}px)`,
-          }}
+          data-testid="brick-canvas-grid"
+          className="absolute inset-0"
+          style={gridStyle}
         >
-          {matrix.flatMap((row, rowIdx) =>
-            row.map((cell, colIdx) => (
-              <div
-                key={`${rowIdx}-${colIdx}`}
-                role="button"
-                aria-label={cell ? cell.name : 'empty cell'}
-                tabIndex={-1}
-                className="focus:outline-none"
-              />
-            ))
+          {matrix.map((row, rowIdx) =>
+            row.map((cell, colIdx) => {
+              const linearIndex = rowIdx * cols + colIdx
+              return (
+                <StudCell
+                  key={`${buildKey}-${rowIdx}-${colIdx}`}
+                  color={cell}
+                  size={computedCellSize}
+                  renderMode={renderMode}
+                  animationDelay={isBuilding ? linearIndex * 16 : 0}
+                  onClick={() => onCellClick(rowIdx, colIdx)}
+                />
+              )
+            })
           )}
         </div>
       </div>

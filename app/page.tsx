@@ -519,8 +519,11 @@ export default function Page() {
                   legoCanvas={
                     <BrickCanvas
                       matrix={canvas.state.pixelMatrix}
+                      renderMode={canvas.state.renderMode}
                       showGrid={canvas.state.showGrid}
                       cellSize={16}
+                      isBuilding={canvas.state.isBuilding}
+                      buildKey={canvas.buildKey}
                       onCellClick={handleCellClick}
                     />
                   }
@@ -529,8 +532,11 @@ export default function Page() {
               ) : (
                 <BrickCanvas
                   matrix={canvas.state.pixelMatrix}
+                  renderMode={canvas.state.renderMode}
                   showGrid={canvas.state.showGrid}
                   cellSize={16}
+                  isBuilding={canvas.state.isBuilding}
+                  buildKey={canvas.buildKey}
                   onCellClick={handleCellClick}
                 />
               )}
