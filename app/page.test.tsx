@@ -1,19 +1,19 @@
-import { useBrickCanvas } from "@/hooks/useBrickCanvas"
-import { useImageProcessor } from "@/hooks/useImageProcessor"
-import { useSound } from "@/hooks/useSound"
-import { exportAsImage, exportBuildGuide } from "@/lib/exportCanvas"
-import { fetchImageAsFile } from "@/lib/imageLoader"
-import { act, fireEvent, render, screen } from "@testing-library/react"
-import { beforeEach, describe, expect, test, vi } from "vitest"
-import Page from "./page"
+import { useBrickCanvas } from '@/hooks/useBrickCanvas'
+import { useImageProcessor } from '@/hooks/useImageProcessor'
+import { useSound } from '@/hooks/useSound'
+import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
+import { fetchImageAsFile } from '@/lib/imageLoader'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
+import Page from './page'
 
-vi.mock(import("@/hooks/useBrickCanvas"))
-vi.mock(import("@/hooks/useImageProcessor"))
-vi.mock(import("@/hooks/useSound"))
-vi.mock(import("@/lib/imageLoader"))
-vi.mock(import("@/lib/exportCanvas"))
+vi.mock(import('@/hooks/useBrickCanvas'))
+vi.mock(import('@/hooks/useImageProcessor'))
+vi.mock(import('@/hooks/useSound'))
+vi.mock(import('@/lib/imageLoader'))
+vi.mock(import('@/lib/exportCanvas'))
 
-vi.mock("@tsparticles/react", () => ({
+vi.mock('@tsparticles/react', () => ({
   default: () => <div data-testid="mock-particles" />,
   initParticlesEngine: vi.fn().mockResolvedValue(undefined),
 }))
@@ -21,7 +21,7 @@ vi.mock("@tsparticles/react", () => ({
 global.URL.createObjectURL = vi.fn((file) => `blob:${file.name}`)
 global.URL.revokeObjectURL = vi.fn()
 
-describe("Page component", () => {
+describe('Page component', () => {
   let mockCanvas: any
   let mockProcessor: any
   let mockSound: any
@@ -34,7 +34,7 @@ describe("Page component", () => {
         pixelMatrix: [],
         gridSize: 32,
         messiness: 0,
-        renderMode: "stud",
+        renderMode: 'stud',
         showGrid: false,
         isBuilding: false,
         buildProgress: 0,
@@ -70,27 +70,27 @@ describe("Page component", () => {
     vi.mocked(useSound).mockReturnValue(mockSound)
   })
 
-  test("renders the initial state with DropZone", () => {
+  test('renders the initial state with DropZone', () => {
     render(<Page />)
-    expect(screen.getByText("Brickr")).toBeInTheDocument()
+    expect(screen.getByText('Brickr')).toBeInTheDocument()
     expect(screen.getByText(/Drop your image here/i)).toBeInTheDocument()
   })
 
-  test("shows loading grid when processing", () => {
+  test('shows loading grid when processing', () => {
     mockProcessor.isProcessing = true
     render(<Page />)
-    expect(document.querySelector(".animate-pulse")).toBeInTheDocument()
+    expect(document.querySelector('.animate-pulse')).toBeInTheDocument()
   })
 
-  test("shows error banner when processor has an error", () => {
-    mockProcessor.error = "Processing failed"
+  test('shows error banner when processor has an error', () => {
+    mockProcessor.error = 'Processing failed'
     render(<Page />)
-    expect(screen.getByText("Processing failed")).toBeInTheDocument()
+    expect(screen.getByText('Processing failed')).toBeInTheDocument()
   })
 
-  test("handles file upload via real DropZone", async () => {
+  test('handles file upload via real DropZone', async () => {
     const { container } = render(<Page />)
-    const file = new File(["test"], "test.png", { type: "image/png" })
+    const file = new File(['test'], 'test.png', { type: 'image/png' })
     const input = container.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement
@@ -103,16 +103,16 @@ describe("Page component", () => {
     expect(global.URL.createObjectURL).toHaveBeenCalled()
   })
 
-  test("handles image loading via URL", async () => {
-    const mockFile = new File([""], "downloaded.png", { type: "image/png" })
+  test('handles image loading via URL', async () => {
+    const mockFile = new File([''], 'downloaded.png', { type: 'image/png' })
     vi.mocked(fetchImageAsFile).mockResolvedValue(mockFile)
 
     render(<Page />)
     const input = screen.getByPlaceholderText(/Paste an image URL here.../i)
-    const loadButton = screen.getByRole("button", { name: /Load/i })
+    const loadButton = screen.getByRole('button', { name: /Load/i })
 
     fireEvent.change(input, {
-      target: { value: "https://example.com/image.png" },
+      target: { value: 'https://example.com/image.png' },
     })
 
     await act(async () => {
@@ -120,16 +120,16 @@ describe("Page component", () => {
     })
 
     expect(fetchImageAsFile).toHaveBeenCalledWith(
-      "https://example.com/image.png"
+      'https://example.com/image.png'
     )
     expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 0)
-    expect(input).toHaveValue("")
+    expect(input).toHaveValue('')
   })
 
-  test("syncs processor output to canvas state", () => {
+  test('syncs processor output to canvas state', () => {
     const { rerender } = render(<Page />)
 
-    const mockMatrix = [[{ hex: "#FF0000", name: "Red" }]]
+    const mockMatrix = [[{ hex: '#FF0000', name: 'Red' }]]
     const mockImageData = { width: 1, height: 1 } as any
 
     mockProcessor.matrix = mockMatrix
@@ -140,10 +140,10 @@ describe("Page component", () => {
     expect(mockCanvas.loadImage).toHaveBeenCalledWith(mockMatrix, mockImageData)
   })
 
-  test("updates settings and re-processes when image is loaded", async () => {
+  test('updates settings and re-processes when image is loaded', async () => {
     const { container, rerender } = render(<Page />)
 
-    const file = new File([""], "test.png", { type: "image/png" })
+    const file = new File([''], 'test.png', { type: 'image/png' })
     const input = container.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement
@@ -151,7 +151,7 @@ describe("Page component", () => {
       fireEvent.change(input, { target: { files: [file] } })
     })
 
-    const size64Btn = screen.getByRole("button", { name: "64×64" })
+    const size64Btn = screen.getByRole('button', { name: '64×64' })
     fireEvent.click(size64Btn)
 
     expect(mockCanvas.setGridSize).toHaveBeenCalledWith(64)
@@ -161,30 +161,30 @@ describe("Page component", () => {
     rerender(<Page />)
   })
 
-  test("handles keyboard shortcuts", () => {
-    mockCanvas.state.pixelMatrix = [[{ hex: "#000000", name: "Black" }]]
+  test('handles keyboard shortcuts', () => {
+    mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
     render(<Page />)
 
-    fireEvent.keyDown(window, { code: "KeyG" })
+    fireEvent.keyDown(window, { code: 'KeyG' })
     expect(mockCanvas.toggleGrid).toHaveBeenCalled()
 
-    fireEvent.keyDown(window, { code: "KeyB" })
+    fireEvent.keyDown(window, { code: 'KeyB' })
     expect(mockCanvas.startBuild).toHaveBeenCalled()
 
-    fireEvent.keyDown(window, { code: "KeyR" })
+    fireEvent.keyDown(window, { code: 'KeyR' })
     expect(mockCanvas.reset).toHaveBeenCalled()
 
-    fireEvent.keyDown(window, { code: "KeyE" })
+    fireEvent.keyDown(window, { code: 'KeyE' })
     expect(exportAsImage).toHaveBeenCalled()
 
-    fireEvent.keyDown(window, { code: "KeyD" })
+    fireEvent.keyDown(window, { code: 'KeyD' })
     expect(exportBuildGuide).toHaveBeenCalled()
   })
 
-  test("toggles comparison view via button and keyboard", async () => {
+  test('toggles comparison view via button and keyboard', async () => {
     const { container, rerender } = render(<Page />)
 
-    const file = new File([""], "test.png", { type: "image/png" })
+    const file = new File([''], 'test.png', { type: 'image/png' })
     const fileInput = container.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement
@@ -192,23 +192,23 @@ describe("Page component", () => {
       fireEvent.change(fileInput, { target: { files: [file] } })
     })
 
-    mockCanvas.state.pixelMatrix = [[{ hex: "#000000", name: "Black" }]]
+    mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
     rerender(<Page />)
 
-    const compareBtn = await screen.findByRole("button", { name: /Compare/i })
+    const compareBtn = await screen.findByRole('button', { name: /Compare/i })
     fireEvent.click(compareBtn)
 
     expect(screen.getByAltText(/Original/i)).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /Canvas/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Canvas/i })).toBeInTheDocument()
 
-    fireEvent.keyDown(window, { code: "KeyC" })
+    fireEvent.keyDown(window, { code: 'KeyC' })
     expect(screen.queryByAltText(/Original/i)).not.toBeInTheDocument()
   })
 
-  test("shows confetti when build is complete", async () => {
+  test('shows confetti when build is complete', async () => {
     vi.useFakeTimers()
 
-    mockCanvas.state.pixelMatrix = [[{ hex: "#E3000B", name: "Red" }]]
+    mockCanvas.state.pixelMatrix = [[{ hex: '#E3000B', name: 'Red' }]]
     mockCanvas.state.isBuilding = false
     mockCanvas.state.buildProgress = 1
 
@@ -219,7 +219,7 @@ describe("Page component", () => {
     })
 
     const confettiOverlay = document.querySelector(
-      ".pointer-events-none.absolute.inset-0.z-30"
+      '.pointer-events-none.absolute.inset-0.z-30'
     )
     expect(confettiOverlay).toBeInTheDocument()
 
@@ -228,21 +228,21 @@ describe("Page component", () => {
     })
 
     expect(
-      document.querySelector(".pointer-events-none.absolute.inset-0.z-30")
+      document.querySelector('.pointer-events-none.absolute.inset-0.z-30')
     ).not.toBeInTheDocument()
 
     vi.useRealTimers()
   })
 
-  test("handles global paste of image URL", async () => {
-    const mockFile = new File([""], "pasted.png", { type: "image/png" })
+  test('handles global paste of image URL', async () => {
+    const mockFile = new File([''], 'pasted.png', { type: 'image/png' })
     vi.mocked(fetchImageAsFile).mockResolvedValue(mockFile)
 
     render(<Page />)
 
-    const pasteEvent = new Event("paste") as any
+    const pasteEvent = new Event('paste') as any
     pasteEvent.clipboardData = {
-      getData: () => "https://example.com/pasted.jpg",
+      getData: () => 'https://example.com/pasted.jpg',
     }
 
     await act(async () => {
@@ -250,29 +250,29 @@ describe("Page component", () => {
     })
 
     expect(fetchImageAsFile).toHaveBeenCalledWith(
-      "https://example.com/pasted.jpg"
+      'https://example.com/pasted.jpg'
     )
     expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 0)
   })
 
-  test("toggles mobile stats panel", async () => {
-    mockCanvas.state.pixelMatrix = [[{ hex: "#000000", name: "Black" }]]
+  test('toggles mobile stats panel', async () => {
+    mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
     render(<Page />)
 
-    const toggleBtn = screen.getByRole("button", { name: /Stats/i })
+    const toggleBtn = screen.getByRole('button', { name: /Stats/i })
     fireEvent.click(toggleBtn)
 
-    expect(screen.getByText("✕ Stats")).toBeInTheDocument()
+    expect(screen.getByText('✕ Stats')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText("✕ Stats"))
+    fireEvent.click(screen.getByText('✕ Stats'))
     expect(screen.getByText(/Stats/i)).toBeInTheDocument()
   })
 
-  test("handleCellClick plays sound and updates canvas", () => {
-    mockCanvas.state.pixelMatrix = [[{ hex: "#000000", name: "Black" }]]
+  test('handleCellClick plays sound and updates canvas', () => {
+    mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
     render(<Page />)
 
-    const cell = screen.getByRole("button", { name: "Black" })
+    const cell = screen.getByRole('button', { name: 'Black' })
     fireEvent.click(cell)
 
     expect(mockSound.playClick).toHaveBeenCalled()

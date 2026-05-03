@@ -1,24 +1,24 @@
-import type { PieceCount } from "@/types"
-import { render, screen } from "@testing-library/react"
-import { describe, expect, test, vi } from "vitest"
-import { StatsPanel } from "./StatsPanel"
+import type { PieceCount } from '@/types'
+import { render, screen } from '@testing-library/react'
+import { describe, expect, test, vi } from 'vitest'
+import { StatsPanel } from './StatsPanel'
 
 // Mock the export functions to avoid actual canvas logic
-vi.mock("@/lib/exportCanvas", () => ({
+vi.mock('@/lib/exportCanvas', () => ({
   exportAsImage: vi.fn(),
   exportBuildGuide: vi.fn(),
 }))
 
-describe("StatsPanel", () => {
+describe('StatsPanel', () => {
   const mockPieceCounts: PieceCount[] = [
     {
-      color: { id: "red", name: "Bright Red", hex: "#FF0000", lab: [0, 0, 0] },
+      color: { id: 'red', name: 'Bright Red', hex: '#FF0000', lab: [0, 0, 0] },
       count: 100,
       percentage: 100,
     },
   ]
 
-  test("renders total pieces count correctly", () => {
+  test('renders total pieces count correctly', () => {
     render(
       <StatsPanel
         pieceCounts={mockPieceCounts}
@@ -29,10 +29,10 @@ describe("StatsPanel", () => {
         renderMode="stud"
       />
     )
-    expect(screen.getAllByText("100")).toHaveLength(2) // Total and Breakdown row
+    expect(screen.getAllByText('100')).toHaveLength(2) // Total and Breakdown row
   })
 
-  test("calculates and displays estimated build time", () => {
+  test('calculates and displays estimated build time', () => {
     // 100 pieces * 15s / 60s = 25 minutes
     render(
       <StatsPanel
@@ -47,10 +47,10 @@ describe("StatsPanel", () => {
     expect(screen.getByText(/≈ 25 min to build/i)).toBeInTheDocument()
   })
 
-  test("shows fun message for large piece count", () => {
+  test('shows fun message for large piece count', () => {
     const largePieceCounts: PieceCount[] = [
       {
-        color: { id: "red", name: "Red", hex: "#FF0000", lab: [0, 0, 0] },
+        color: { id: 'red', name: 'Red', hex: '#FF0000', lab: [0, 0, 0] },
         count: 600,
         percentage: 100,
       },
@@ -68,7 +68,7 @@ describe("StatsPanel", () => {
     expect(screen.getByText("That's a lot of bricks 👀")).toBeInTheDocument()
   })
 
-  test("shows building status and progress", () => {
+  test('shows building status and progress', () => {
     render(
       <StatsPanel
         pieceCounts={mockPieceCounts}
@@ -79,11 +79,11 @@ describe("StatsPanel", () => {
         renderMode="stud"
       />
     )
-    expect(screen.getByText("Building…")).toBeInTheDocument()
-    expect(screen.getByText("50%")).toBeInTheDocument()
+    expect(screen.getByText('Building…')).toBeInTheDocument()
+    expect(screen.getByText('50%')).toBeInTheDocument()
   })
 
-  test("shows export buttons when matrix is provided", () => {
+  test('shows export buttons when matrix is provided', () => {
     const mockMatrix = [[null]]
     render(
       <StatsPanel
@@ -99,7 +99,7 @@ describe("StatsPanel", () => {
     expect(screen.getByText(/Download guide/i)).toBeInTheDocument()
   })
 
-  test("hides export buttons when matrix is null", () => {
+  test('hides export buttons when matrix is null', () => {
     render(
       <StatsPanel
         pieceCounts={mockPieceCounts}

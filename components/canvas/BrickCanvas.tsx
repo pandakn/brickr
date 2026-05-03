@@ -38,7 +38,6 @@ export function BrickCanvas({
   // Number of columns = number of rows (square grid)
   const gridSize = matrix.length > 0 ? matrix[0].length : 0
 
-
   useEffect(() => {
     if (gridSize === 0) return
     const el = containerRef.current
@@ -57,7 +56,6 @@ export function BrickCanvas({
     return () => observer.disconnect()
   }, [gridSize, showGrid])
 
-
   const gridStyle = useMemo(
     () => ({
       display: 'grid' as const,
@@ -67,7 +65,7 @@ export function BrickCanvas({
       // Crisp rendering — no anti-aliasing between adjacent cells
       imageRendering: 'pixelated' as const,
     }),
-    [gridSize, computedCellSize, showGrid],
+    [gridSize, computedCellSize, showGrid]
   )
 
   if (matrix.length === 0) {
@@ -102,7 +100,7 @@ export function BrickCanvas({
                 onClick={() => onCellClick(rowIdx, colIdx)}
               />
             )
-          }),
+          })
         )}
       </div>
     </div>

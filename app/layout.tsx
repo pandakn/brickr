@@ -1,25 +1,25 @@
-import type { Metadata } from "next"
-import { Nunito, Space_Mono } from "next/font/google"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
-import "./globals.css"
+import type { Metadata } from 'next'
+import { Nunito, Space_Mono } from 'next/font/google'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
+import './globals.css'
 
 const nunito = Nunito({
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800", "900"],
-  variable: "--font-display",
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800', '900'],
+  variable: '--font-display',
 })
 
 const spaceMono = Space_Mono({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-mono",
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-mono',
 })
 
 export const metadata: Metadata = {
-  title: "Brickr",
+  title: 'Brickr',
   description:
-    "Turn any image into LEGO-style pixel art — right in your browser.",
+    'Turn any image into LEGO-style pixel art — right in your browser.',
 }
 
 export default function RootLayout({

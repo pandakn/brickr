@@ -56,17 +56,17 @@ function rgbToLab(r: number, g: number, b: number): [number, number, number] {
 
   // 3 — Linear sRGB → CIE XYZ (D65, 2° observer matrix, IEC 61966-2-1)
   const X = 0.4124564 * rl + 0.3575761 * gl + 0.1804375 * bl
-  const Y = 0.2126729 * rl + 0.7151522 * gl + 0.0721750 * bl
-  const Z = 0.0193339 * rl + 0.1191920 * gl + 0.9503041 * bl
+  const Y = 0.2126729 * rl + 0.7151522 * gl + 0.072175 * bl
+  const Z = 0.0193339 * rl + 0.119192 * gl + 0.9503041 * bl
 
   // 4 — Normalise by D65 white point (Xn=0.95047, Yn=1.00000, Zn=1.08883)
   const fx = labF(X / 0.95047)
-  const fy = labF(Y / 1.00000)
+  const fy = labF(Y / 1.0)
   const fz = labF(Z / 1.08883)
 
   // 5 — XYZ → L*a*b*
   return [
-    116 * fy - 16,   // L*
+    116 * fy - 16, // L*
     500 * (fx - fy), // a*
     200 * (fy - fz), // b*
   ]
@@ -83,9 +83,13 @@ function rgbToLab(r: number, g: number, b: number): [number, number, number] {
 export function hexToLab(hex: string): [number, number, number] {
   const raw = hex.replace('#', '')
   // Expand shorthand: "abc" → "aabbcc"
-  const full = raw.length === 3
-    ? raw.split('').map((c) => c + c).join('')
-    : raw
+  const full =
+    raw.length === 3
+      ? raw
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : raw
 
   const r = parseInt(full.slice(0, 2), 16)
   const g = parseInt(full.slice(2, 4), 16)
@@ -106,7 +110,7 @@ export function hexToLab(hex: string): [number, number, number] {
  */
 export function deltaE(
   lab1: [number, number, number],
-  lab2: [number, number, number],
+  lab2: [number, number, number]
 ): number {
   const dL = lab1[0] - lab2[0]
   const da = lab1[1] - lab2[1]

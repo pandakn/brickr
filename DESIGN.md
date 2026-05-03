@@ -33,13 +33,14 @@ fontFamily: {
 ```
 
 ### Usage
-| Role | Class |
-|---|---|
-| Display / hero | `font-display font-black text-4xl tracking-tight` |
-| Heading | `font-display font-extrabold text-2xl` |
-| Subheading | `font-display font-bold text-base` |
-| Body | `font-display font-normal text-sm text-sand-600` |
-| Mono label / coord | `font-mono font-bold text-xs text-sand-500` |
+
+| Role                    | Class                                                                     |
+| ----------------------- | ------------------------------------------------------------------------- |
+| Display / hero          | `font-display font-black text-4xl tracking-tight`                         |
+| Heading                 | `font-display font-extrabold text-2xl`                                    |
+| Subheading              | `font-display font-bold text-base`                                        |
+| Body                    | `font-display font-normal text-sm text-sand-600`                          |
+| Mono label / coord      | `font-mono font-bold text-xs text-sand-500`                               |
 | Micro / uppercase label | `font-mono font-bold text-[10px] uppercase tracking-widest text-sand-400` |
 
 ---
@@ -75,19 +76,20 @@ colors: {
 ```
 
 ### Semantic usage
-| Token | Use |
-|---|---|
-| `bg-sand-100` | Page background |
-| `bg-sand-200` | Panel / card surface |
-| `border-sand-300` | Default card border |
-| `text-sand-800` | Headings |
-| `text-sand-600` | Body copy |
-| `text-sand-500` | Labels, meta |
-| `bg-brick-red` | Primary CTA, active states |
-| `bg-brick-blue` | Info badges, grid size active |
-| `bg-brick-yellow` | Secondary CTA, highlight |
-| `bg-brick-green` | Success state |
-| `bg-brick-black` | Dark stud cells |
+
+| Token             | Use                           |
+| ----------------- | ----------------------------- |
+| `bg-sand-100`     | Page background               |
+| `bg-sand-200`     | Panel / card surface          |
+| `border-sand-300` | Default card border           |
+| `text-sand-800`   | Headings                      |
+| `text-sand-600`   | Body copy                     |
+| `text-sand-500`   | Labels, meta                  |
+| `bg-brick-red`    | Primary CTA, active states    |
+| `bg-brick-blue`   | Info badges, grid size active |
+| `bg-brick-yellow` | Secondary CTA, highlight      |
+| `bg-brick-green`  | Success state                 |
+| `bg-brick-black`  | Dark stud cells               |
 
 ---
 
@@ -95,14 +97,14 @@ colors: {
 
 Follow Tailwind defaults — these are the ones used in Brickr:
 
-| Token | px | Use |
-|---|---|---|
-| `gap-1` / `p-1` | 4px | Tight internal gaps |
-| `gap-2` / `p-2` | 8px | Icon-label gap, stud padding |
-| `gap-3` / `p-3` | 12px | Component inner padding |
-| `gap-5` / `p-5` | 20px | Card padding |
-| `gap-8` / `p-8` | 32px | Panel padding, section gap |
-| `gap-12` / `p-12` | 48px | Layout gap |
+| Token             | px   | Use                          |
+| ----------------- | ---- | ---------------------------- |
+| `gap-1` / `p-1`   | 4px  | Tight internal gaps          |
+| `gap-2` / `p-2`   | 8px  | Icon-label gap, stud padding |
+| `gap-3` / `p-3`   | 12px | Component inner padding      |
+| `gap-5` / `p-5`   | 20px | Card padding                 |
+| `gap-8` / `p-8`   | 32px | Panel padding, section gap   |
+| `gap-12` / `p-12` | 48px | Layout gap                   |
 
 ---
 
@@ -120,14 +122,14 @@ borderRadius: {
 }
 ```
 
-| Token | Use |
-|---|---|
-| `rounded-stud` | Canvas cells |
-| `rounded-sm` | Small badges, small buttons |
-| `rounded-md` | Buttons, grid pills, inputs |
-| `rounded-lg` | Cards, panels |
-| `rounded-xl` | Large modals, floating panels |
-| `rounded-full` | Pill badges, avatar circles |
+| Token          | Use                           |
+| -------------- | ----------------------------- |
+| `rounded-stud` | Canvas cells                  |
+| `rounded-sm`   | Small badges, small buttons   |
+| `rounded-md`   | Buttons, grid pills, inputs   |
+| `rounded-lg`   | Cards, panels                 |
+| `rounded-xl`   | Large modals, floating panels |
+| `rounded-full` | Pill badges, avatar circles   |
 
 ---
 
@@ -143,12 +145,12 @@ boxShadow: {
 }
 ```
 
-| Token | Use |
-|---|---|
-| `shadow-flat` | Default cards on page bg |
-| `shadow-raised` | Panels, stat cards |
+| Token             | Use                        |
+| ----------------- | -------------------------- |
+| `shadow-flat`     | Default cards on page bg   |
+| `shadow-raised`   | Panels, stat cards         |
 | `shadow-floating` | Control panel, floating UI |
-| `shadow-stud` | Individual LEGO stud cells |
+| `shadow-stud`     | Individual LEGO stud cells |
 
 ---
 
@@ -192,8 +194,9 @@ animation: {
 ```
 
 ### Motion rules
+
 - Canvas stud cells: `hover:animate-stud-pop` — never `transition` on cells, always keyframe
-- Progressive build: 16ms delay per cell index — compute with `animationDelay: \`${index * 16}ms\``
+- Progressive build: 16ms delay per cell index — compute with `animationDelay: \`${index \* 16}ms\``
 - Panels and controls: `transition-all duration-base`
 - Button press: `active:scale-[0.97] transition-transform duration-micro`
 
@@ -209,7 +212,7 @@ The atomic unit. Renders as a colored square with a circular stud on top.
 // StudCell.tsx
 interface StudCellProps {
   color: LegoColor
-  size?: number     // px, default 16
+  size?: number // px, default 16
   isHovered?: boolean
   isSelected?: boolean
 }
@@ -217,14 +220,14 @@ interface StudCellProps {
 // Class composition
 const cell = cn(
   'relative flex items-center justify-center rounded-stud',
-  'transition-transform duration-snap cursor-pointer',
-  'hover:scale-110 hover:-translate-y-px',
-  isSelected && 'ring-2 ring-white ring-offset-1',
+  'duration-snap cursor-pointer transition-transform',
+  'hover:-translate-y-px hover:scale-110',
+  isSelected && 'ring-2 ring-white ring-offset-1'
 )
 
 const stud = cn(
   'rounded-full',
-  'bg-white/25 border border-white/40',
+  'border border-white/40 bg-white/25'
   // size: 60% of cell
 )
 ```
@@ -232,13 +235,15 @@ const stud = cn(
 ### Button — primary
 
 ```tsx
-<button className={cn(
-  'font-display font-extrabold text-sm',
-  'bg-brick-red text-white',
-  'px-5 py-2.5 rounded-md',
-  'hover:brightness-110 active:scale-[0.97]',
-  'transition-all duration-micro',
-)}>
+<button
+  className={cn(
+    'font-display text-sm font-extrabold',
+    'bg-brick-red text-white',
+    'rounded-md px-5 py-2.5',
+    'hover:brightness-110 active:scale-[0.97]',
+    'duration-micro transition-all'
+  )}
+>
   Build it
 </button>
 ```
@@ -246,13 +251,15 @@ const stud = cn(
 ### Button — secondary
 
 ```tsx
-<button className={cn(
-  'font-display font-extrabold text-sm',
-  'bg-sand-300 text-sand-800',
-  'px-5 py-2.5 rounded-md',
-  'hover:bg-sand-400 active:scale-[0.97]',
-  'transition-all duration-micro',
-)}>
+<button
+  className={cn(
+    'font-display text-sm font-extrabold',
+    'bg-sand-300 text-sand-800',
+    'rounded-md px-5 py-2.5',
+    'hover:bg-sand-400 active:scale-[0.97]',
+    'duration-micro transition-all'
+  )}
+>
   Reset
 </button>
 ```
@@ -260,13 +267,15 @@ const stud = cn(
 ### Button — ghost
 
 ```tsx
-<button className={cn(
-  'font-display font-extrabold text-sm',
-  'bg-transparent text-brick-blue border-2 border-brick-blue',
-  'px-5 py-2.5 rounded-md',
-  'hover:bg-brick-blue/10 active:scale-[0.97]',
-  'transition-all duration-micro',
-)}>
+<button
+  className={cn(
+    'font-display text-sm font-extrabold',
+    'border-2 border-brick-blue bg-transparent text-brick-blue',
+    'rounded-md px-5 py-2.5',
+    'hover:bg-brick-blue/10 active:scale-[0.97]',
+    'duration-micro transition-all'
+  )}
+>
   Compare
 </button>
 ```
@@ -275,11 +284,11 @@ const stud = cn(
 
 ```tsx
 const badgeVariants = {
-  red:    'bg-brick-red text-white',
-  blue:   'bg-brick-blue text-white',
+  red: 'bg-brick-red text-white',
+  blue: 'bg-brick-blue text-white',
   yellow: 'bg-brick-yellow text-sand-800',
-  green:  'bg-brick-green text-white',
-  sand:   'bg-sand-300 text-sand-700',
+  green: 'bg-brick-green text-white',
+  sand: 'bg-sand-300 text-sand-700',
 }
 
 // Base: rounded-full px-3 py-0.5 text-xs font-display font-bold
@@ -315,17 +324,27 @@ const badgeVariants = {
 ```tsx
 <div className="flex items-center gap-2.5">
   {/* Color stud */}
-  <div className="w-5 h-5 rounded-stud flex items-center justify-center" style={{ background: color.hex }}>
-    <div className="w-2.5 h-2.5 rounded-full bg-white/30 border border-white/50" />
+  <div
+    className="flex h-5 w-5 items-center justify-center rounded-stud"
+    style={{ background: color.hex }}
+  >
+    <div className="h-2.5 w-2.5 rounded-full border border-white/50 bg-white/30" />
   </div>
   {/* Name */}
-  <span className="flex-1 font-display font-bold text-sm text-sand-700">{color.name}</span>
+  <span className="flex-1 font-display text-sm font-bold text-sand-700">
+    {color.name}
+  </span>
   {/* Bar */}
-  <div className="flex-[2] h-2 bg-sand-200 rounded-full overflow-hidden">
-    <div className="h-full rounded-full transition-all duration-slow" style={{ width: `${pct}%`, background: color.hex }} />
+  <div className="h-2 flex-[2] overflow-hidden rounded-full bg-sand-200">
+    <div
+      className="duration-slow h-full rounded-full transition-all"
+      style={{ width: `${pct}%`, background: color.hex }}
+    />
   </div>
   {/* Count */}
-  <span className="font-mono font-bold text-xs text-sand-500 min-w-[32px] text-right">{count}</span>
+  <span className="min-w-[32px] text-right font-mono text-xs font-bold text-sand-500">
+    {count}
+  </span>
 </div>
 ```
 
@@ -346,9 +365,9 @@ Use Aceternity's `<FileUpload>` component. Wrap in:
 Use Aceternity's `<AnimatedProgressBar>` or roll a custom one:
 
 ```tsx
-<div className="h-1.5 w-full bg-sand-200 rounded-full overflow-hidden">
+<div className="h-1.5 w-full overflow-hidden rounded-full bg-sand-200">
   <div
-    className="h-full bg-brick-red rounded-full transition-all duration-base"
+    className="duration-base h-full rounded-full bg-brick-red transition-all"
     style={{ width: `${progress * 100}%` }}
   />
 </div>
@@ -394,13 +413,13 @@ darkMode: false,  // or omit entirely
 
 ## Aceternity components in use
 
-| Component | Where |
-|---|---|
-| `FileUpload` | `DropZone.tsx` |
-| `BackgroundBeams` | Empty state behind canvas |
-| `SparklesCore` | Completion confetti effect |
+| Component         | Where                           |
+| ----------------- | ------------------------------- |
+| `FileUpload`      | `DropZone.tsx`                  |
+| `BackgroundBeams` | Empty state behind canvas       |
+| `SparklesCore`    | Completion confetti effect      |
 | `AnimatedTooltip` | Color swatch hover in breakdown |
-| `Progress` | Build animation progress bar |
+| `Progress`        | Build animation progress bar    |
 
 Always import Aceternity components from `@/components/ui/` after copying with the CLI.
 

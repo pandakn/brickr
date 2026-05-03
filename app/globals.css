@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 /* ═══════════════════════════════════════════════════════════════════
    Brickr — Tailwind v4 CSS-first configuration
@@ -189,6 +189,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-sand-100 text-sand-800 font-display antialiased;
+    @apply bg-sand-100 font-display text-sand-800 antialiased;
   }
 }

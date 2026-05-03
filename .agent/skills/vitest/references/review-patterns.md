@@ -44,7 +44,9 @@ test('saves user to database', async () => {
   await createUser('Alice', 'alice@example.com', 'password')
 
   expect(hashSpy).toHaveBeenCalledOnce()
-  expect(saveSpy).toHaveBeenCalledWith(expect.objectContaining({ name: 'Alice' }))
+  expect(saveSpy).toHaveBeenCalledWith(
+    expect.objectContaining({ name: 'Alice' })
+  )
 })
 ```
 
@@ -156,8 +158,12 @@ test('sends welcome email after user creation', async () => {
 **❌ Before**
 
 ```ts
-test('should correctly return the formatted price string when given a valid positive number and a supported currency code')
-test('should throw an error when the amount is negative and the currency is USD')
+test(
+  'should correctly return the formatted price string when given a valid positive number and a supported currency code'
+)
+test(
+  'should throw an error when the amount is negative and the currency is USD'
+)
 ```
 
 **✅ After**
@@ -190,7 +196,9 @@ test('fetches user profile', async () => {
 
 // Or use .resolves
 test('fetches user profile', () => {
-  return expect(fetchUserProfile('123')).resolves.toMatchObject({ name: 'Alice' })
+  return expect(fetchUserProfile('123')).resolves.toMatchObject({
+    name: 'Alice',
+  })
 })
 ```
 

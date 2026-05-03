@@ -164,7 +164,9 @@ AI skips hard cases. Ask explicitly if not present:
 
 ```ts
 // ❌ too verbose
-test('should correctly return the formatted price string when given a valid positive number')
+test(
+  'should correctly return the formatted price string when given a valid positive number'
+)
 
 // ✅ scannable
 test('formats USD prices')

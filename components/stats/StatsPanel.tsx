@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import { useMemo } from "react"
-import { cn } from "@/lib/cn"
-import type { GridSize, LegoColor, PieceCount, RenderMode } from "@/types"
-import { exportAsImage, exportBuildGuide } from "@/lib/exportCanvas"
-import { ColorBreakdown } from "./ColorBreakdown"
-import { Kbd } from "@/components/ui/kbd"
+import { useMemo } from 'react'
+import { cn } from '@/lib/cn'
+import type { GridSize, LegoColor, PieceCount, RenderMode } from '@/types'
+import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
+import { ColorBreakdown } from './ColorBreakdown'
+import { Kbd } from '@/components/ui/kbd'
 
 export interface StatsPanelProps {
   pieceCounts: PieceCount[]
@@ -39,10 +39,9 @@ export function StatsPanel({
   const buildTimeMin = Math.round((totalPieces * 15) / 60)
   const canExport = matrix !== null && matrix.length > 0
 
-
   const funMessage = useMemo(() => {
     if (!isBuilding && buildProgress === 1 && totalPieces > 0) {
-      return "Ready to build? 🧱"
+      return 'Ready to build? 🧱'
     }
     if (totalPieces > 500) {
       return "That's a lot of bricks 👀"
@@ -54,25 +53,25 @@ export function StatsPanel({
     <div
       className={cn(
         // Shared
-        "bg-sand-100/90 backdrop-blur-md",
-        "border border-sand-300",
-        "z-20 p-5 shadow-floating",
-        "duration-base transition-all",
-        "fixed right-0 bottom-0 left-0",
-        "max-h-[70vh] overflow-y-auto rounded-t-xl",
-        mobileVisible ? "translate-y-0" : "translate-y-full",
-        "lg:translate-y-0", // always un-translated on desktop
-        "lg:right-4 lg:bottom-auto lg:left-auto",
-        "lg:top-1/2 lg:-translate-y-1/2",
-        "lg:w-56 lg:rounded-xl",
-        "lg:max-h-[calc(100vh-2rem)]"
+        'bg-sand-100/90 backdrop-blur-md',
+        'border border-sand-300',
+        'z-20 p-5 shadow-floating',
+        'duration-base transition-all',
+        'fixed right-0 bottom-0 left-0',
+        'max-h-[70vh] overflow-y-auto rounded-t-xl',
+        mobileVisible ? 'translate-y-0' : 'translate-y-full',
+        'lg:translate-y-0', // always un-translated on desktop
+        'lg:right-4 lg:bottom-auto lg:left-auto',
+        'lg:top-1/2 lg:-translate-y-1/2',
+        'lg:w-56 lg:rounded-xl',
+        'lg:max-h-[calc(100vh-2rem)]'
       )}
     >
       <p className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
         Total pieces
       </p>
       <p className="mt-0.5 font-display text-3xl leading-none font-black text-sand-800">
-        {totalPieces > 0 ? totalPieces.toLocaleString() : "—"}
+        {totalPieces > 0 ? totalPieces.toLocaleString() : '—'}
       </p>
 
       {totalPieces > 0 && (
@@ -91,7 +90,7 @@ export function StatsPanel({
         <div className="mt-4">
           <div className="mb-1 flex items-center justify-between">
             <span className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
-              {isBuilding ? "Building…" : "Done"}
+              {isBuilding ? 'Building…' : 'Done'}
             </span>
             <span className="font-mono text-[10px] text-sand-400">
               {Math.round(buildProgress * 100)}%
@@ -126,30 +125,34 @@ export function StatsPanel({
               type="button"
               onClick={() => exportAsImage(matrix, renderMode, 16)}
               className={cn(
-                "flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2",
-                "font-display text-xs font-extrabold text-sand-700",
-                "border-sand-300 bg-sand-200",
-                "hover:bg-sand-300 active:scale-[0.97]",
-                "duration-micro transition-all"
+                'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',
+                'font-display text-xs font-extrabold text-sand-700',
+                'border-sand-300 bg-sand-200',
+                'hover:bg-sand-300 active:scale-[0.97]',
+                'duration-micro transition-all'
               )}
             >
               <span>↓ Download art</span>
-              <Kbd className="border-sand-400/20 bg-sand-300/50 text-sand-500">E</Kbd>
+              <Kbd className="border-sand-400/20 bg-sand-300/50 text-sand-500">
+                E
+              </Kbd>
             </button>
 
             <button
               type="button"
               onClick={() => exportBuildGuide(matrix, gridSize)}
               className={cn(
-                "flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2",
-                "font-display text-xs font-extrabold text-sand-700",
-                "border-sand-300 bg-sand-200",
-                "hover:bg-sand-300 active:scale-[0.97]",
-                "duration-micro transition-all"
+                'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',
+                'font-display text-xs font-extrabold text-sand-700',
+                'border-sand-300 bg-sand-200',
+                'hover:bg-sand-300 active:scale-[0.97]',
+                'duration-micro transition-all'
               )}
             >
               <span>↓ Download guide</span>
-              <Kbd className="border-sand-400/20 bg-sand-300/50 text-sand-500">D</Kbd>
+              <Kbd className="border-sand-400/20 bg-sand-300/50 text-sand-500">
+                D
+              </Kbd>
             </button>
           </div>
         </>

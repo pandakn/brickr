@@ -24,7 +24,7 @@ export type LegoColor = {
 export type GridSize = 12 | 25 | 32 | 40 | 64
 
 /** Whether cells render as a flat square or a square with a raised circular stud. */
-export type RenderMode = "flat" | "stud"
+export type RenderMode = 'flat' | 'stud'
 
 // ─── Application state ─────────────────────────────────────────────────────
 

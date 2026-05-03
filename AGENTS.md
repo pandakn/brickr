@@ -13,15 +13,15 @@ Brickr converts images into LEGO-style pixel art in the browser. It is a single-
 
 ## Tech stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 16 (App Router, Static Export) |
-| Language | TypeScript (strict mode) |
-| Styling | Tailwind CSS v4 |
-| Components | shadcn/ui |
-| Motion/FX | Aceternity UI |
-| State | React hooks + Zustand |
-| Image processing | Canvas API (browser-side only) |
+| Layer            | Choice                                 |
+| ---------------- | -------------------------------------- |
+| Framework        | Next.js 16 (App Router, Static Export) |
+| Language         | TypeScript (strict mode)               |
+| Styling          | Tailwind CSS v4                        |
+| Components       | shadcn/ui                              |
+| Motion/FX        | Aceternity UI                          |
+| State            | React hooks + Zustand                  |
+| Image processing | Canvas API (browser-side only)         |
 
 ---
 
@@ -66,12 +66,14 @@ src/
 ## Coding conventions
 
 ### General
+
 - Strict TypeScript — no `any`, no `as unknown`
 - Named exports everywhere — no default exports except `page.tsx` and `layout.tsx`
 - Co-locate component types with the component file
 - No barrel `index.ts` re-exports unless there are 4+ files in a folder
 
 ### Components
+
 - Functional components only
 - Props interface named `[ComponentName]Props`
 - Keep components under 150 lines — extract if longer
@@ -79,27 +81,30 @@ src/
 - Aceternity components go in `components/ui/` (same as shadcn)
 
 ### Tailwind
+
 - Use design tokens from `DESIGN.md` — no arbitrary values unless unavoidable
 - Follow the class order: layout → spacing → sizing → typography → color → border → effects → motion
 - Extract repeated class combos into `cn()` variants or a shared component, not `@apply`
 
 ### Canvas / image processing
+
 - All image processing runs client-side via Canvas API — never send image data to a server
 - `imageProcessor.ts` handles resize → quantize → matrix output
 - `colorMapping.ts` handles LAB delta-E matching to the LEGO palette
 - The pixel matrix is the single source of truth — canvas renders from it
 
 ### State shape
+
 ```ts
 type BrickState = {
   originalImage: ImageData | null
-  pixelMatrix: LegoColor[][]  // [row][col]
+  pixelMatrix: LegoColor[][] // [row][col]
   gridSize: 12 | 32 | 64
-  messiness: number           // 0–100
+  messiness: number // 0–100
   renderMode: 'flat' | 'stud'
   showGrid: boolean
   isBuilding: boolean
-  buildProgress: number       // 0–1
+  buildProgress: number // 0–1
 }
 ```
 
@@ -121,14 +126,14 @@ type BrickState = {
 
 ## Naming
 
-| Thing | Convention | Example |
-|---|---|---|
-| Components | PascalCase | `BrickCanvas.tsx` |
-| Hooks | camelCase, `use` prefix | `useBrickCanvas.ts` |
-| Utilities | camelCase | `colorMapping.ts` |
-| Types | PascalCase | `LegoColor`, `BrickState` |
-| Tailwind tokens | kebab-case | `bg-brick-red` |
-| Constants | SCREAMING_SNAKE | `LEGO_PALETTE` |
+| Thing           | Convention              | Example                   |
+| --------------- | ----------------------- | ------------------------- |
+| Components      | PascalCase              | `BrickCanvas.tsx`         |
+| Hooks           | camelCase, `use` prefix | `useBrickCanvas.ts`       |
+| Utilities       | camelCase               | `colorMapping.ts`         |
+| Types           | PascalCase              | `LegoColor`, `BrickState` |
+| Tailwind tokens | kebab-case              | `bg-brick-red`            |
+| Constants       | SCREAMING_SNAKE         | `LEGO_PALETTE`            |
 
 ---
 

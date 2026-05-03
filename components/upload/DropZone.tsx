@@ -1,14 +1,14 @@
-"use client"
+'use client'
 
-import { useState, useCallback } from "react"
-import { useDropzone, type FileRejection } from "react-dropzone"
-import { BackgroundBeams } from "@/components/ui/background-beams"
-import { cn } from "@/lib/cn"
+import { useState, useCallback } from 'react'
+import { useDropzone, type FileRejection } from 'react-dropzone'
+import { BackgroundBeams } from '@/components/ui/background-beams'
+import { cn } from '@/lib/cn'
 
 const ACCEPTED_TYPES = {
-  "image/jpeg": [".jpg", ".jpeg"],
-  "image/png": [".png"],
-  "image/webp": [".webp"],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
 }
 
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
@@ -75,13 +75,13 @@ export function DropZone({ onFile }: DropZoneProps) {
       setError(null)
 
       if (rejected.length > 0) {
-        const code = rejected[0]?.errors[0]?.code ?? ""
-        if (code === "file-too-large") {
-          setError("That file is too large — maximum is 10 MB.")
-        } else if (code === "file-invalid-type") {
-          setError("Only JPG, PNG, and WebP images are supported.")
+        const code = rejected[0]?.errors[0]?.code ?? ''
+        if (code === 'file-too-large') {
+          setError('That file is too large — maximum is 10 MB.')
+        } else if (code === 'file-invalid-type') {
+          setError('Only JPG, PNG, and WebP images are supported.')
         } else {
-          setError("Could not read this file. Please try another.")
+          setError('Could not read this file. Please try another.')
         }
         return
       }
@@ -108,30 +108,30 @@ export function DropZone({ onFile }: DropZoneProps) {
         {...getRootProps()}
         className={cn(
           // Layout
-          "relative z-10 flex min-h-80 w-full flex-col items-center justify-center",
+          'relative z-10 flex min-h-80 w-full flex-col items-center justify-center',
           // Shape
-          "rounded-xl border-2 border-dashed",
+          'rounded-xl border-2 border-dashed',
           // Interaction
-          "cursor-pointer select-none",
+          'cursor-pointer select-none',
           // Motion
-          "duration-base transition-colors",
+          'duration-base transition-colors',
           // State variants
           isDragActive
-            ? "border-brick-red bg-brick-red/5"
-            : "border-sand-300 bg-sand-200/50 hover:border-brick-red"
+            ? 'border-brick-red bg-brick-red/5'
+            : 'border-sand-300 bg-sand-200/50 hover:border-brick-red'
         )}
       >
         <input {...getInputProps()} />
 
         <BrickIcon
           className={cn(
-            "duration-base mb-4 h-12 w-12 transition-colors",
-            isDragActive ? "text-brick-red" : "text-sand-400"
+            'duration-base mb-4 h-12 w-12 transition-colors',
+            isDragActive ? 'text-brick-red' : 'text-sand-400'
           )}
         />
 
         <p className="font-display text-base font-extrabold text-sand-700">
-          {isDragActive ? "Drop it!" : "Drop your image here"}
+          {isDragActive ? 'Drop it!' : 'Drop your image here'}
         </p>
 
         <p className="mt-1 font-display text-sm text-sand-500">

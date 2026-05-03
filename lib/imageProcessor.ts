@@ -63,7 +63,7 @@ function deriveMatrixSeed(matrix: LegoColor[][]): number {
  */
 export async function resizeImage(
   file: File,
-  gridSize: GridSize,
+  gridSize: GridSize
 ): Promise<ImageData> {
   const bitmap = await createImageBitmap(file)
 
@@ -98,7 +98,7 @@ export async function resizeImage(
  */
 export function applyMessiness(
   matrix: LegoColor[][],
-  messiness: number,
+  messiness: number
 ): LegoColor[][] {
   if (messiness === 0) return matrix
 
@@ -122,10 +122,10 @@ export function applyMessiness(
       const offset = Math.round((rand() * 2 - 1) * maxOffset)
       const newIdx = Math.max(
         0,
-        Math.min(LEGO_PALETTE.length - 1, currentIdx + offset),
+        Math.min(LEGO_PALETTE.length - 1, currentIdx + offset)
       )
       return LEGO_PALETTE[newIdx]
-    }),
+    })
   )
 }
 
@@ -142,7 +142,7 @@ export function applyMessiness(
  */
 export function buildPixelMatrix(
   imageData: ImageData,
-  messiness: number,
+  messiness: number
 ): LegoColor[][] {
   const { width, height, data } = imageData
   const matrix: LegoColor[][] = []
@@ -179,7 +179,7 @@ export function buildPixelMatrix(
  * Returns results sorted by count descending (most-used colour first).
  */
 export function computePieceCounts(
-  matrix: (LegoColor | null)[][],
+  matrix: (LegoColor | null)[][]
 ): PieceCount[] {
   const counts = new Map<string, { color: LegoColor; count: number }>()
   let total = 0

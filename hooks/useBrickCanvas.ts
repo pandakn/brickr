@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 /**
  * useBrickCanvas
@@ -18,8 +18,8 @@
  *   progress bar is smooth without triggering 60 re-renders per second.
  */
 
-import { useState, useCallback, useRef } from "react"
-import type { BrickState, GridSize, LegoColor, RenderMode } from "@/types"
+import { useState, useCallback, useRef } from 'react'
+import type { BrickState, GridSize, LegoColor, RenderMode } from '@/types'
 
 // ─── Default state ────────────────────────────────────────────────────────
 
@@ -28,7 +28,7 @@ const DEFAULT_STATE: BrickState = {
   pixelMatrix: [],
   gridSize: 32,
   messiness: 0,
-  renderMode: "stud",
+  renderMode: 'stud',
   showGrid: false,
   isBuilding: false,
   buildProgress: 0,

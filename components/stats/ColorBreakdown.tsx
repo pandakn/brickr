@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 /**
  * ColorBreakdown
@@ -15,8 +15,8 @@
  * not the "derived state" anti-pattern AGENTS.md warns against.)
  */
 
-import { useEffect, useState } from "react"
-import type { PieceCount } from "@/types"
+import { useEffect, useState } from 'react'
+import type { PieceCount } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -70,7 +70,7 @@ export function ColorBreakdown({ pieceCounts }: ColorBreakdownProps) {
             <div
               className="duration-slow h-full rounded-full transition-all"
               style={{
-                width: visible ? `${percentage}%` : "0%",
+                width: visible ? `${percentage}%` : '0%',
                 backgroundColor: color.hex,
               }}
             />

@@ -1,9 +1,9 @@
-"use client";
-import { cn } from "@/lib/utils";
-import React, { useRef, useState } from "react";
-import { motion } from "motion/react";
-import { IconUpload } from "@tabler/icons-react";
-import { useDropzone } from "react-dropzone";
+'use client'
+import { cn } from '@/lib/utils'
+import React, { useRef, useState } from 'react'
+import { motion } from 'motion/react'
+import { IconUpload } from '@tabler/icons-react'
+import { useDropzone } from 'react-dropzone'
 
 const mainVariant = {
   initial: {
@@ -15,7 +15,7 @@ const mainVariant = {
     y: -20,
     opacity: 0.9,
   },
-};
+}
 
 const secondaryVariant = {
   initial: {
@@ -24,33 +24,33 @@ const secondaryVariant = {
   animate: {
     opacity: 1,
   },
-};
+}
 
 export const FileUpload = ({
   onChange,
 }: {
-  onChange?: (files: File[]) => void;
+  onChange?: (files: File[]) => void
 }) => {
-  const [files, setFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [files, setFiles] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = (newFiles: File[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-    onChange && onChange(newFiles);
-  };
+    setFiles((prevFiles) => [...prevFiles, ...newFiles])
+    onChange && onChange(newFiles)
+  }
 
   const handleClick = () => {
-    fileInputRef.current?.click();
-  };
+    fileInputRef.current?.click()
+  }
 
   const { getRootProps, isDragActive } = useDropzone({
     multiple: false,
     noClick: true,
     onDrop: handleFileChange,
     onDropRejected: (error) => {
-      console.log(error);
+      console.log(error)
     },
-  });
+  })
 
   return (
     <div className="w-full" {...getRootProps()}>
@@ -80,11 +80,11 @@ export const FileUpload = ({
             {files.length > 0 &&
               files.map((file, idx) => (
                 <motion.div
-                  key={"file" + idx}
-                  layoutId={idx === 0 ? "file-upload" : "file-upload-" + idx}
+                  key={'file' + idx}
+                  layoutId={idx === 0 ? 'file-upload' : 'file-upload-' + idx}
                   className={cn(
-                    "relative z-40 mx-auto mt-4 flex w-full flex-col items-start justify-start overflow-hidden rounded-md bg-white p-4 md:h-24 dark:bg-neutral-900",
-                    "shadow-sm",
+                    'relative z-40 mx-auto mt-4 flex w-full flex-col items-start justify-start overflow-hidden rounded-md bg-white p-4 md:h-24 dark:bg-neutral-900',
+                    'shadow-sm'
                   )}
                 >
                   <div className="flex w-full items-center justify-between gap-4">
@@ -100,7 +100,7 @@ export const FileUpload = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="shadow-input w-fit shrink-0 rounded-lg px-2 py-1 text-sm text-neutral-600 dark:bg-neutral-800 dark:text-white"
+                      className="w-fit shrink-0 rounded-lg px-2 py-1 text-sm text-neutral-600 shadow-input dark:bg-neutral-800 dark:text-white"
                     >
                       {(file.size / (1024 * 1024)).toFixed(2)} MB
                     </motion.p>
@@ -121,7 +121,7 @@ export const FileUpload = ({
                       animate={{ opacity: 1 }}
                       layout
                     >
-                      modified{" "}
+                      modified{' '}
                       {new Date(file.lastModified).toLocaleDateString()}
                     </motion.p>
                   </div>
@@ -132,13 +132,13 @@ export const FileUpload = ({
                 layoutId="file-upload"
                 variants={mainVariant}
                 transition={{
-                  type: "spring",
+                  type: 'spring',
                   stiffness: 300,
                   damping: 20,
                 }}
                 className={cn(
-                  "relative z-40 mx-auto mt-4 flex h-32 w-full max-w-[8rem] items-center justify-center rounded-md bg-white group-hover/file:shadow-2xl dark:bg-neutral-900",
-                  "shadow-[0px_10px_50px_rgba(0,0,0,0.1)]",
+                  'relative z-40 mx-auto mt-4 flex h-32 w-full max-w-[8rem] items-center justify-center rounded-md bg-white group-hover/file:shadow-2xl dark:bg-neutral-900',
+                  'shadow-[0px_10px_50px_rgba(0,0,0,0.1)]'
                 )}
               >
                 {isDragActive ? (
@@ -166,29 +166,29 @@ export const FileUpload = ({
         </div>
       </motion.div>
     </div>
-  );
-};
+  )
+}
 
 export function GridPattern() {
-  const columns = 41;
-  const rows = 11;
+  const columns = 41
+  const rows = 11
   return (
     <div className="flex shrink-0 scale-105 flex-wrap items-center justify-center gap-x-px gap-y-px bg-gray-100 dark:bg-neutral-900">
       {Array.from({ length: rows }).map((_, row) =>
         Array.from({ length: columns }).map((_, col) => {
-          const index = row * columns + col;
+          const index = row * columns + col
           return (
             <div
               key={`${col}-${row}`}
               className={`flex h-10 w-10 shrink-0 rounded-[2px] ${
                 index % 2 === 0
-                  ? "bg-gray-50 dark:bg-neutral-950"
-                  : "bg-gray-50 shadow-[0px_0px_1px_3px_rgba(255,255,255,1)_inset] dark:bg-neutral-950 dark:shadow-[0px_0px_1px_3px_rgba(0,0,0,1)_inset]"
+                  ? 'bg-gray-50 dark:bg-neutral-950'
+                  : 'bg-gray-50 shadow-[0px_0px_1px_3px_rgba(255,255,255,1)_inset] dark:bg-neutral-950 dark:shadow-[0px_0px_1px_3px_rgba(0,0,0,1)_inset]'
               }`}
             />
-          );
-        }),
+          )
+        })
       )}
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 /**
  * Brickr — main page
@@ -21,22 +21,22 @@
  * slides under either panel.
  */
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { useBrickCanvas } from "@/hooks/useBrickCanvas"
-import { useImageProcessor } from "@/hooks/useImageProcessor"
-import { useSound } from "@/hooks/useSound"
-import { DropZone } from "@/components/upload/DropZone"
-import { BrickCanvas } from "@/components/canvas/BrickCanvas"
-import { BeforeAfterSlider } from "@/components/canvas/BeforeAfterSlider"
-import { ControlPanel } from "@/components/controls/ControlPanel"
-import { StatsPanel } from "@/components/stats/StatsPanel"
-import { SparklesCore } from "@/components/ui/sparkles"
-import { cn } from "@/lib/cn"
-import { exportAsImage, exportBuildGuide } from "@/lib/exportCanvas"
-import type { GridSize } from "@/types"
-import { ToyBrick } from "lucide-react"
-import { fetchImageAsFile } from "@/lib/imageLoader"
-import { Kbd } from "@/components/ui/kbd"
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useBrickCanvas } from '@/hooks/useBrickCanvas'
+import { useImageProcessor } from '@/hooks/useImageProcessor'
+import { useSound } from '@/hooks/useSound'
+import { DropZone } from '@/components/upload/DropZone'
+import { BrickCanvas } from '@/components/canvas/BrickCanvas'
+import { BeforeAfterSlider } from '@/components/canvas/BeforeAfterSlider'
+import { ControlPanel } from '@/components/controls/ControlPanel'
+import { StatsPanel } from '@/components/stats/StatsPanel'
+import { SparklesCore } from '@/components/ui/sparkles'
+import { cn } from '@/lib/cn'
+import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
+import type { GridSize } from '@/types'
+import { ToyBrick } from 'lucide-react'
+import { fetchImageAsFile } from '@/lib/imageLoader'
+import { Kbd } from '@/components/ui/kbd'
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
 
@@ -51,12 +51,12 @@ function LoadingGrid({ gridSize }: { gridSize: GridSize }) {
       <div
         className="animate-pulse"
         style={{
-          display: "grid",
+          display: 'grid',
           gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-          gap: "1px",
-          aspectRatio: "1 / 1",
-          width: "100%",
-          maxWidth: "100%",
+          gap: '1px',
+          aspectRatio: '1 / 1',
+          width: '100%',
+          maxWidth: '100%',
         }}
       >
         {Array.from({ length: count }).map((_, i) => (
@@ -90,7 +90,7 @@ export default function Page() {
   const [showMobileStats, setShowMobileStats] = useState(false)
 
   /** URL input state */
-  const [urlInput, setUrlInput] = useState("")
+  const [urlInput, setUrlInput] = useState('')
   const [isLoadingUrl, setIsLoadingUrl] = useState(false)
   const [urlError, setUrlError] = useState<string | null>(null)
 
@@ -142,7 +142,7 @@ export default function Page() {
     setShowConfetti(false)
     setShowComparison(false)
     setShowMobileStats(false)
-    setUrlInput("")
+    setUrlInput('')
     setUrlError(null)
   }
 
@@ -183,9 +183,9 @@ export default function Page() {
       const t = e.target as HTMLElement
       if (
         t.isContentEditable ||
-        t.tagName === "INPUT" ||
-        t.tagName === "TEXTAREA" ||
-        t.tagName === "SELECT" ||
+        t.tagName === 'INPUT' ||
+        t.tagName === 'TEXTAREA' ||
+        t.tagName === 'SELECT' ||
         e.metaKey ||
         e.ctrlKey ||
         e.altKey
@@ -194,33 +194,33 @@ export default function Page() {
 
       const kb = kbRef.current
       switch (e.code) {
-        case "KeyG":
+        case 'KeyG':
           e.preventDefault()
           kb.toggleGrid()
           break
-        case "KeyB":
+        case 'KeyB':
           if (kb.hasImage && !kb.isBuilding) {
             e.preventDefault()
             kb.startBuild()
           }
           break
-        case "KeyR":
+        case 'KeyR':
           e.preventDefault()
           kb.handleReset()
           break
-        case "KeyE":
+        case 'KeyE':
           if (kb.hasImage) {
             e.preventDefault()
             exportAsImage(kb.pixelMatrix, kb.renderMode, 16)
           }
           break
-        case "KeyC":
+        case 'KeyC':
           if (kb.hasImage && kb.hasOriginalSrc) {
             e.preventDefault()
             setShowComparison((v) => !v)
           }
           break
-        case "KeyD":
+        case 'KeyD':
           if (kb.hasImage) {
             e.preventDefault()
             exportBuildGuide(kb.pixelMatrix, kb.gridSize)
@@ -229,8 +229,8 @@ export default function Page() {
       }
     }
 
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
   }, [setShowComparison]) // stable dep
 
   const handleFile = useCallback(
@@ -256,11 +256,11 @@ export default function Page() {
       // If an image is already loaded, don't hijack paste (maybe user is typing in a future input)
       if (hasImage || processor.isProcessing) return
 
-      const text = e.clipboardData?.getData("text")
+      const text = e.clipboardData?.getData('text')
       if (!text) return
 
       // Basic URL detection
-      if (text.startsWith("http") || text.startsWith("data:image")) {
+      if (text.startsWith('http') || text.startsWith('data:image')) {
         try {
           const file = await fetchImageAsFile(text)
           handleFile(file)
@@ -270,8 +270,8 @@ export default function Page() {
       }
     }
 
-    window.addEventListener("paste", onPaste)
-    return () => window.removeEventListener("paste", onPaste)
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
   }, [hasImage, processor.isProcessing, handleFile])
 
   const handleUrlSubmit = async (e: React.FormEvent) => {
@@ -284,12 +284,12 @@ export default function Page() {
     try {
       const file = await fetchImageAsFile(urlInput)
       handleFile(file)
-      setUrlInput("")
+      setUrlInput('')
     } catch (err) {
       setUrlError(
         err instanceof Error
           ? err.message
-          : "Could not load image. It might be blocked by CORS."
+          : 'Could not load image. It might be blocked by CORS.'
       )
     } finally {
       setIsLoadingUrl(false)
@@ -353,19 +353,25 @@ export default function Page() {
             type="button"
             onClick={() => setShowComparison((v) => !v)}
             className={cn(
-              "ml-auto flex items-center gap-2 font-display text-xs font-extrabold",
-              "rounded-md border-2 px-4 py-1.5",
-              "duration-micro transition-all active:scale-[0.97]",
+              'ml-auto flex items-center gap-2 font-display text-xs font-extrabold',
+              'rounded-md border-2 px-4 py-1.5',
+              'duration-micro transition-all active:scale-[0.97]',
               showComparison
-                ? "border-brick-blue bg-brick-blue text-white"
-                : "border-brick-blue bg-transparent text-brick-blue hover:bg-brick-blue/10"
+                ? 'border-brick-blue bg-brick-blue text-white'
+                : 'border-brick-blue bg-transparent text-brick-blue hover:bg-brick-blue/10'
             )}
           >
-            <span>{showComparison ? "← Canvas" : "Compare →"}</span>
-            <Kbd className={cn(
-              "transition-colors",
-              showComparison ? "border-white/20 bg-white/10 text-white" : "border-brick-blue/20 bg-brick-blue/5 text-brick-blue"
-            )}>C</Kbd>
+            <span>{showComparison ? '← Canvas' : 'Compare →'}</span>
+            <Kbd
+              className={cn(
+                'transition-colors',
+                showComparison
+                  ? 'border-white/20 bg-white/10 text-white'
+                  : 'border-brick-blue/20 bg-brick-blue/5 text-brick-blue'
+              )}
+            >
+              C
+            </Kbd>
           </button>
         )}
       </header>
@@ -406,16 +412,16 @@ export default function Page() {
             type="button"
             onClick={() => setShowMobileStats((v) => !v)}
             className={cn(
-              "fixed right-4 bottom-[calc(60vh+0.75rem)] z-30 lg:hidden",
-              "rounded-full px-4 py-2 shadow-floating",
-              "font-display text-xs font-extrabold",
-              "duration-micro transition-all active:scale-[0.97]",
+              'fixed right-4 bottom-[calc(60vh+0.75rem)] z-30 lg:hidden',
+              'rounded-full px-4 py-2 shadow-floating',
+              'font-display text-xs font-extrabold',
+              'duration-micro transition-all active:scale-[0.97]',
               showMobileStats
-                ? "bg-brick-blue text-white"
-                : "border border-sand-300 bg-sand-100/90 text-sand-700"
+                ? 'bg-brick-blue text-white'
+                : 'border border-sand-300 bg-sand-100/90 text-sand-700'
             )}
           >
-            {showMobileStats ? "✕ Stats" : "📊 Stats"}
+            {showMobileStats ? '✕ Stats' : '📊 Stats'}
           </button>
         )}
 
@@ -425,7 +431,7 @@ export default function Page() {
         <div className="flex h-full items-center justify-center px-4 pb-[60vh] lg:px-0 lg:pr-64 lg:pb-0 lg:pl-72">
           {/* ── No image: drop zone ───────────────────────────────────── */}
           {!hasImage && !processor.isProcessing && (
-            <div className="flex w-full max-w-xl flex-col gap-6 animate-in fade-in zoom-in slide-in-from-bottom-8 duration-base">
+            <div className="duration-base flex w-full max-w-xl animate-in flex-col gap-6 fade-in slide-in-from-bottom-8 zoom-in">
               {/* URL Input Section */}
               <div className="flex flex-col items-center gap-3">
                 <p className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
@@ -445,15 +451,17 @@ export default function Page() {
                   />
                   <button
                     type="submit"
-                    disabled={!urlInput || processor.isProcessing || isLoadingUrl}
-                    className={cn(
-                      "px-6 py-2.5 font-display text-sm font-extrabold transition-all",
+                    disabled={
                       !urlInput || processor.isProcessing || isLoadingUrl
-                        ? "bg-sand-200 text-sand-400"
-                        : "bg-brick-red text-white hover:bg-brick-red/90 active:scale-[0.98]"
+                    }
+                    className={cn(
+                      'px-6 py-2.5 font-display text-sm font-extrabold transition-all',
+                      !urlInput || processor.isProcessing || isLoadingUrl
+                        ? 'bg-sand-200 text-sand-400'
+                        : 'bg-brick-red text-white hover:bg-brick-red/90 active:scale-[0.98]'
                     )}
                   >
-                    {isLoadingUrl ? "..." : "Load"}
+                    {isLoadingUrl ? '...' : 'Load'}
                   </button>
                 </form>
                 {urlError && (

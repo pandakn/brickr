@@ -18,11 +18,11 @@ import type { GridSize, LegoColor, RenderMode } from '@/types'
 
 // ─── Guide layout constants ────────────────────────────────────────────────
 
-const GUIDE_CELL = 28    // px — data cell size
-const GUIDE_HDR_W = 28   // px — row-number column width
-const GUIDE_HDR_H = 24   // px — column-label row height
-const GUIDE_GAP = 1      // px — gap between cells (doubles as grid line)
-const GUIDE_FONT = 9     // px — abbreviation text inside cells
+const GUIDE_CELL = 28 // px — data cell size
+const GUIDE_HDR_W = 28 // px — row-number column width
+const GUIDE_HDR_H = 24 // px — column-label row height
+const GUIDE_GAP = 1 // px — gap between cells (doubles as grid line)
+const GUIDE_FONT = 9 // px — abbreviation text inside cells
 const GUIDE_HDR_FONT = 8 // px — header label text
 
 // ─── Private helpers ──────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ function drawStudCell(
   x: number,
   y: number,
   size: number,
-  renderMode: RenderMode,
+  renderMode: RenderMode
 ): void {
   const radius = Math.max(2, Math.round(size * 0.15))
 
@@ -99,7 +99,7 @@ function drawStudCell(
 
   // ── Stud circle (stud mode only) ────────────────────────────────────────
   if (renderMode === 'stud') {
-    const studR = size * 0.30     // radius = 60% diam / 2
+    const studR = size * 0.3 // radius = 60% diam / 2
     const cx = x + size / 2
     const cy = y + size / 2
 
@@ -130,7 +130,7 @@ function drawStudCell(
 export function exportAsImage(
   matrix: (LegoColor | null)[][],
   renderMode: RenderMode,
-  cellSize: number,
+  cellSize: number
 ): void {
   const rows = matrix.length
   if (rows === 0) return
@@ -152,7 +152,14 @@ export function exportAsImage(
     for (let col = 0; col < cols; col++) {
       const color = matrix[row]?.[col]
       if (!color) continue
-      drawStudCell(ctx, color, col * cellSize, row * cellSize, cellSize, renderMode)
+      drawStudCell(
+        ctx,
+        color,
+        col * cellSize,
+        row * cellSize,
+        cellSize,
+        renderMode
+      )
     }
   }
 
@@ -177,7 +184,7 @@ export function exportAsImage(
  */
 export function exportBuildGuide(
   matrix: (LegoColor | null)[][],
-  gridSize: GridSize,
+  gridSize: GridSize
 ): void {
   const rows = matrix.length
   if (rows === 0) return
@@ -209,11 +216,17 @@ export function exportBuildGuide(
 
   for (let col = 0; col <= cols; col++) {
     const x = HW + col * (C + G) + G * 0.5
-    ctx.beginPath(); ctx.moveTo(x, HH); ctx.lineTo(x, canvasH); ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(x, HH)
+    ctx.lineTo(x, canvasH)
+    ctx.stroke()
   }
   for (let row = 0; row <= rows; row++) {
     const y = HH + row * (C + G) + G * 0.5
-    ctx.beginPath(); ctx.moveTo(HW, y); ctx.lineTo(canvasW, y); ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(HW, y)
+    ctx.lineTo(canvasW, y)
+    ctx.stroke()
   }
 
   // ── Column headers (A, B, C … AA, AB …) ──────────────────────────────

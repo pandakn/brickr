@@ -21,7 +21,6 @@ export function BeforeAfterSlider({
   const [splitPct, setSplitPct] = useState(50)
   const isDragging = useRef(false)
 
-
   const updateSplit = useCallback((clientX: number) => {
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
@@ -36,7 +35,7 @@ export function BeforeAfterSlider({
       e.currentTarget.setPointerCapture(e.pointerId)
       updateSplit(e.clientX)
     },
-    [updateSplit],
+    [updateSplit]
   )
 
   const handlePointerMove = useCallback(
@@ -44,21 +43,20 @@ export function BeforeAfterSlider({
       if (!isDragging.current) return
       updateSplit(e.clientX)
     },
-    [updateSplit],
+    [updateSplit]
   )
 
   const handlePointerUp = useCallback(() => {
     isDragging.current = false
   }, [])
 
-
   return (
     <div
       ref={containerRef}
       className={cn(
-        'relative w-full h-full overflow-hidden rounded-xl select-none',
+        'relative h-full w-full overflow-hidden rounded-xl select-none',
         'cursor-col-resize touch-none',
-        className,
+        className
       )}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -66,26 +64,24 @@ export function BeforeAfterSlider({
       onPointerCancel={handlePointerUp}
     >
       {/* ── LEGO canvas — full size, base layer ──────────────────────── */}
-      <div className="absolute inset-0 pointer-events-none">
-        {legoCanvas}
-      </div>
+      <div className="pointer-events-none absolute inset-0">{legoCanvas}</div>
 
       {/* ── Original image — full size, clipped on the right ─────────── */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="pointer-events-none absolute inset-0"
         style={{ clipPath: `inset(0 ${100 - splitPct}% 0 0)` }}
       >
         <img
           src={originalSrc}
           alt="Original image"
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
           draggable={false}
         />
       </div>
 
       {/* ── Divider line ─────────────────────────────────────────────── */}
       <div
-        className="absolute inset-y-0 w-0.5 bg-white shadow-floating pointer-events-none"
+        className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow-floating"
         style={{ left: `${splitPct}%`, transform: 'translateX(-50%)' }}
       >
         {/* Drag handle circle — centred on the divider */}
@@ -93,7 +89,7 @@ export function BeforeAfterSlider({
           className={cn(
             'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
             'flex h-9 w-9 items-center justify-center',
-            'rounded-full bg-white shadow-floating',
+            'rounded-full bg-white shadow-floating'
           )}
           aria-hidden="true"
         >
@@ -106,13 +102,13 @@ export function BeforeAfterSlider({
       </div>
 
       {/* ── Corner labels ─────────────────────────────────────────────── */}
-      <div className="pointer-events-none absolute left-3 top-3 z-10">
-        <span className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-white/80">
+      <div className="pointer-events-none absolute top-3 left-3 z-10">
+        <span className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] tracking-widest text-white/80 uppercase">
           Original
         </span>
       </div>
-      <div className="pointer-events-none absolute right-3 top-3 z-10">
-        <span className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-white/80">
+      <div className="pointer-events-none absolute top-3 right-3 z-10">
+        <span className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] tracking-widest text-white/80 uppercase">
           LEGO
         </span>
       </div>

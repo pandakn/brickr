@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 /**
  * useImageProcessor
@@ -16,13 +16,13 @@
  *   await process(file, 32, 20)   // gridSize=32, messiness=20
  */
 
-import { useState, useCallback } from "react"
-import type { GridSize, LegoColor, PieceCount } from "@/types"
+import { useState, useCallback } from 'react'
+import type { GridSize, LegoColor, PieceCount } from '@/types'
 import {
   resizeImage,
   buildPixelMatrix,
   computePieceCounts,
-} from "@/lib/imageProcessor"
+} from '@/lib/imageProcessor'
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -82,7 +82,7 @@ export function useImageProcessor(): UseImageProcessorReturn {
         setPieceCounts(counts)
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : "Failed to process image."
+          err instanceof Error ? err.message : 'Failed to process image.'
         setError(message)
         // Keep the previous matrix/counts visible so the UI doesn't go blank
       } finally {

@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import { Slider } from "@/components/ui/slider"
-import { cn } from "@/lib/cn"
+import { Slider } from '@/components/ui/slider'
+import { cn } from '@/lib/cn'
 
 export interface MessinessSliderProps {
   value: number // 0–100
@@ -31,8 +31,8 @@ export function MessinessSlider({ value, onChange }: MessinessSliderProps) {
         step={1}
         aria-label="Messiness"
         className={cn(
-          "**:data-[slot=slider-track]:bg-sand-200",
-          "**:data-[slot=slider-range]:bg-brick-orange"
+          '**:data-[slot=slider-track]:bg-sand-200',
+          '**:data-[slot=slider-range]:bg-brick-orange'
         )}
       />
 
