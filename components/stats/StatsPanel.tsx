@@ -15,11 +15,6 @@ export interface StatsPanelProps {
   matrix: (LegoColor | null)[][] | null
   gridDimensions: GridDimensions
   renderMode: RenderMode
-  /**
-   * On mobile (< lg) the panel is hidden by default.
-   * Set to true to make it visible as a bottom sheet on small screens.
-   */
-  mobileVisible?: boolean
 }
 
 export function StatsPanel({
@@ -29,7 +24,6 @@ export function StatsPanel({
   matrix,
   gridDimensions,
   renderMode,
-  mobileVisible = false,
 }: StatsPanelProps) {
   const totalPieces = useMemo(
     () => pieceCounts.reduce((sum, pc) => sum + pc.count, 0),
@@ -53,19 +47,9 @@ export function StatsPanel({
     <div
       data-testid="stats-panel"
       className={cn(
-        // Shared
         'bg-sand-100/90 backdrop-blur-md',
         'border border-sand-300',
-        'z-20 p-5 shadow-floating',
-        'duration-base transition-all',
-        'fixed right-0 bottom-0 left-0',
-        'max-h-[70vh] overflow-y-auto rounded-t-xl',
-        mobileVisible ? 'translate-y-0' : 'translate-y-full',
-        'lg:translate-y-0', // always un-translated on desktop
-        'lg:right-4 lg:bottom-auto lg:left-auto',
-        'lg:top-1/2 lg:-translate-y-1/2',
-        'lg:w-56 lg:rounded-xl',
-        'lg:max-h-[calc(100vh-2rem)]'
+        'p-5 shadow-floating'
       )}
     >
       <p className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">

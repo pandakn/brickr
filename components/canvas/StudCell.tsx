@@ -25,7 +25,13 @@ export function StudCell({
 }: StudCellProps) {
   // Null cell — transparent placeholder that preserves grid layout
   if (color === null) {
-    return <div data-testid="stud-cell-empty" aria-hidden="true" style={{ width: size, height: size }} />
+    return (
+      <div
+        data-testid="stud-cell-empty"
+        aria-hidden="true"
+        style={{ width: size, height: size }}
+      />
+    )
   }
 
   // Stud diameter = 60% of cell size

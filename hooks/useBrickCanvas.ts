@@ -79,9 +79,7 @@ export function useBrickCanvas(): UseBrickCanvasReturn {
    * without being listed as useCallback deps.
    * Only mutated inside setGridDimensions, loadImage, and reset — never during render.
    */
-  const gridDimensionsRef = useRef<GridDimensions>(
-    DEFAULT_STATE.gridDimensions
-  )
+  const gridDimensionsRef = useRef<GridDimensions>(DEFAULT_STATE.gridDimensions)
 
   /** Clean matrix from image processor, used to restore removed cells. */
   const originalMatrixRef = useRef<LegoColor[][]>([])

@@ -68,24 +68,11 @@ export function ControlPanel({
     <div
       data-testid="control-panel"
       className={cn(
-        // Shared
         'bg-sand-100/90 backdrop-blur-md',
         'border border-sand-300',
-        'z-20 p-5 shadow-floating',
-        'duration-base transition-all',
-        'fixed right-0 bottom-0 left-0',
-        'rounded-t-xl',
-        'max-h-[60vh] overflow-y-auto',
-        'lg:right-auto lg:bottom-auto lg:left-4',
-        'lg:top-1/2 lg:-translate-y-1/2',
-        'lg:w-64 lg:rounded-xl',
-        'lg:max-h-none lg:overflow-visible'
+        'p-5 shadow-floating'
       )}
     >
-      <div className="mb-3 flex justify-center lg:hidden">
-        <div className="h-1 w-8 rounded-full bg-sand-400" aria-hidden="true" />
-      </div>
-
       <SectionLabel>Grid size</SectionLabel>
       <GridDimensionsPicker
         value={gridDimensions}
@@ -233,9 +220,6 @@ export function ControlPanel({
           </Kbd>
         </button>
       </div>
-
-      {/* Bottom safe-area spacer (mobile, for devices with home indicator) */}
-      <div className="h-safe-b lg:hidden" />
     </div>
   )
 }

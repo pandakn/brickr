@@ -23,8 +23,12 @@ describe('ControlPanel', () => {
   test('renders correctly with estimates', () => {
     render(<ControlPanel {...defaultProps} />)
     // 32 * 32 = 1024
-    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent(/1,024 pieces/i)
-    expect(screen.getByTestId('minutes-estimate')).toHaveTextContent(/~256 min/i)
+    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent(
+      /1,024 pieces/i
+    )
+    expect(screen.getByTestId('minutes-estimate')).toHaveTextContent(
+      /~256 min/i
+    )
   })
 
   test('toggles render mode', () => {

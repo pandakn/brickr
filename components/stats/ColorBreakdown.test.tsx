@@ -6,7 +6,9 @@ import { ColorBreakdown } from './ColorBreakdown'
 describe('ColorBreakdown', () => {
   test('renders empty state message when no piece counts', () => {
     render(<ColorBreakdown pieceCounts={[]} />)
-    expect(screen.getByTestId('color-breakdown-empty-state')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('color-breakdown-empty-state')
+    ).toBeInTheDocument()
   })
 
   test('renders a list of colors and counts', () => {

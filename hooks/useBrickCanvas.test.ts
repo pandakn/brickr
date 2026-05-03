@@ -11,7 +11,10 @@ describe('useBrickCanvas', () => {
   test('should initialize with default state', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
-    expect(result.current.state.gridDimensions).toEqual({ width: 32, height: 32 })
+    expect(result.current.state.gridDimensions).toEqual({
+      width: 32,
+      height: 32,
+    })
     expect(result.current.state.messiness).toBe(0)
     expect(result.current.state.pixelMatrix).toEqual([])
     expect(result.current.state.isBuilding).toBe(false)
@@ -24,7 +27,10 @@ describe('useBrickCanvas', () => {
       result.current.setGridDimensions({ width: 64, height: 40 })
     })
 
-    expect(result.current.state.gridDimensions).toEqual({ width: 64, height: 40 })
+    expect(result.current.state.gridDimensions).toEqual({
+      width: 64,
+      height: 40,
+    })
   })
 
   test('should update messiness within bounds', () => {
@@ -101,7 +107,10 @@ describe('useBrickCanvas', () => {
       result.current.reset()
     })
 
-    expect(result.current.state.gridDimensions).toEqual({ width: 32, height: 32 })
+    expect(result.current.state.gridDimensions).toEqual({
+      width: 32,
+      height: 32,
+    })
     expect(result.current.state.messiness).toBe(0)
   })
 })

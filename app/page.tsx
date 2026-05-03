@@ -25,12 +25,13 @@ import { BeforeAfterSlider } from '@/components/canvas/BeforeAfterSlider'
 import { BrickCanvas } from '@/components/canvas/BrickCanvas'
 import { ControlPanel } from '@/components/controls/ControlPanel'
 import { StatsPanel } from '@/components/stats/StatsPanel'
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer'
 import { Kbd } from '@/components/ui/kbd'
-import { PixelatedCanvas } from '@/components/ui/pixelated-canvas'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { DropZone } from '@/components/upload/DropZone'
 import { useBrickCanvas } from '@/hooks/useBrickCanvas'
 import { useImageProcessor } from '@/hooks/useImageProcessor'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useSound } from '@/hooks/useSound'
 import { cn } from '@/lib/cn'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
@@ -73,6 +74,7 @@ export default function Page() {
   const canvas = useBrickCanvas()
   const processor = useImageProcessor()
   const sound = useSound()
+  const isMobile = useIsMobile()
 
   /** The last file the user uploaded — kept so we can reprocess on settings change. */
   const sourceFileRef = useRef<File | null>(null)
@@ -384,33 +386,81 @@ export default function Page() {
 
       {/* ── Main area ───────────────────────────────────────────────────── */}
       <main className="relative min-h-0 flex-1">
-        {/* Floating panels (position: fixed — don't affect flow) */}
-        <ControlPanel
-          gridDimensions={canvas.state.gridDimensions}
-          messiness={canvas.state.messiness}
-          renderMode={canvas.state.renderMode}
-          showGrid={canvas.state.showGrid}
-          isBuilding={canvas.state.isBuilding}
-          soundEnabled={sound.soundEnabled}
-          hasImage={hasImage}
-          onGridDimensionsChange={handleGridDimensionsChange}
-          onMessinessChange={handleMessinessChange}
-          onRenderModeChange={canvas.setRenderMode}
-          onGridToggle={canvas.toggleGrid}
-          onSoundToggle={sound.toggleSound}
-          onBuild={canvas.startBuild}
-          onReset={handleReset}
-        />
+        {isMobile ? (
+          <>
+            {/* ControlPanel — mobile: Drawer bottom sheet */}
+            <Drawer defaultOpen dismissible>
+              <DrawerContent className="max-h-[60vh]">
+                <DrawerTitle className="sr-only">Controls</DrawerTitle>
+                <ControlPanel
+                  gridDimensions={canvas.state.gridDimensions}
+                  messiness={canvas.state.messiness}
+                  renderMode={canvas.state.renderMode}
+                  showGrid={canvas.state.showGrid}
+                  isBuilding={canvas.state.isBuilding}
+                  soundEnabled={sound.soundEnabled}
+                  hasImage={hasImage}
+                  onGridDimensionsChange={handleGridDimensionsChange}
+                  onMessinessChange={handleMessinessChange}
+                  onRenderModeChange={canvas.setRenderMode}
+                  onGridToggle={canvas.toggleGrid}
+                  onSoundToggle={sound.toggleSound}
+                  onBuild={canvas.startBuild}
+                  onReset={handleReset}
+                />
+              </DrawerContent>
+            </Drawer>
 
-        <StatsPanel
-          pieceCounts={processor.pieceCounts}
-          isBuilding={canvas.state.isBuilding}
-          buildProgress={canvas.state.buildProgress}
-          matrix={hasImage ? canvas.state.pixelMatrix : null}
-          gridDimensions={canvas.state.gridDimensions}
-          renderMode={canvas.state.renderMode}
-          mobileVisible={showMobileStats}
-        />
+            {/* StatsPanel — mobile: Drawer bottom sheet */}
+            <Drawer open={showMobileStats} onOpenChange={setShowMobileStats}>
+              <DrawerContent className="max-h-[70vh]">
+                <DrawerTitle className="sr-only">Stats</DrawerTitle>
+                <StatsPanel
+                  pieceCounts={processor.pieceCounts}
+                  isBuilding={canvas.state.isBuilding}
+                  buildProgress={canvas.state.buildProgress}
+                  matrix={hasImage ? canvas.state.pixelMatrix : null}
+                  gridDimensions={canvas.state.gridDimensions}
+                  renderMode={canvas.state.renderMode}
+                />
+              </DrawerContent>
+            </Drawer>
+          </>
+        ) : (
+          <>
+            {/* ControlPanel — desktop: fixed sidebar */}
+            <div className="fixed top-1/2 left-4 z-20 w-64 -translate-y-1/2 rounded-xl">
+              <ControlPanel
+                gridDimensions={canvas.state.gridDimensions}
+                messiness={canvas.state.messiness}
+                renderMode={canvas.state.renderMode}
+                showGrid={canvas.state.showGrid}
+                isBuilding={canvas.state.isBuilding}
+                soundEnabled={sound.soundEnabled}
+                hasImage={hasImage}
+                onGridDimensionsChange={handleGridDimensionsChange}
+                onMessinessChange={handleMessinessChange}
+                onRenderModeChange={canvas.setRenderMode}
+                onGridToggle={canvas.toggleGrid}
+                onSoundToggle={sound.toggleSound}
+                onBuild={canvas.startBuild}
+                onReset={handleReset}
+              />
+            </div>
+
+            {/* StatsPanel — desktop: fixed sidebar */}
+            <div className="fixed top-1/2 right-4 z-20 w-56 -translate-y-1/2">
+              <StatsPanel
+                pieceCounts={processor.pieceCounts}
+                isBuilding={canvas.state.isBuilding}
+                buildProgress={canvas.state.buildProgress}
+                matrix={hasImage ? canvas.state.pixelMatrix : null}
+                gridDimensions={canvas.state.gridDimensions}
+                renderMode={canvas.state.renderMode}
+              />
+            </div>
+          </>
+        )}
 
         {/* Mobile stats toggle button — visible only on small screens */}
         {hasImage && (
@@ -427,7 +477,7 @@ export default function Page() {
                 : 'border border-sand-300 bg-sand-100/90 text-sand-700'
             )}
           >
-            {showMobileStats ? '✕ Stats' : '📊 Stats'}
+            Stats
           </button>
         )}
 
