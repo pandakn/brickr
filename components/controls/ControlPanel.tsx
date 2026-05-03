@@ -1,34 +1,11 @@
 "use client"
 
-/**
- * ControlPanel
- *
- * Floating configuration panel.
- *
- * Layout
- * ──────
- * Mobile (<lg):  full-width bottom sheet, rounded top corners, scrollable.
- * Desktop (lg+): fixed left sidebar, vertically centred.
- *
- * Contents
- * ────────
- * • Grid size picker (12 / 32 / 64)
- * • Messiness slider (0–100)
- * • Render mode toggle (Flat / Stud)
- * • Grid lines toggle
- * • Sound toggle  (Web Audio click on stud press)
- * • Estimates (pieces + minutes)
- * • Build it + Reset action buttons
- */
-
 import { Volume2, VolumeX } from "lucide-react"
 import { cn } from "@/lib/cn"
 import type { GridSize, RenderMode } from "@/types"
 import { GridSizePicker } from "./GridSizePicker"
 import { MessinessSlider } from "./MessinessSlider"
 import { Kbd } from "@/components/ui/kbd"
-
-// ─── Types ────────────────────────────────────────────────────────────────
 
 export interface ControlPanelProps {
   gridSize: GridSize
@@ -48,7 +25,6 @@ export interface ControlPanelProps {
   onReset: () => void
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────
 
 function estimatedPieces(gridSize: GridSize): number {
   return gridSize * gridSize
@@ -57,8 +33,6 @@ function estimatedPieces(gridSize: GridSize): number {
 function estimatedMinutes(gridSize: GridSize): number {
   return Math.round((gridSize * gridSize * 15) / 60)
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -71,8 +45,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function Divider() {
   return <div className="my-4 h-px w-full bg-sand-300" />
 }
-
-// ─── Component ────────────────────────────────────────────────────────────
 
 export function ControlPanel({
   gridSize,
@@ -101,34 +73,28 @@ export function ControlPanel({
         "border border-sand-300",
         "z-20 p-5 shadow-floating",
         "duration-base transition-all",
-        // ── Mobile: full-width bottom sheet ───────────────────────────────
         "fixed right-0 bottom-0 left-0",
         "rounded-t-xl",
         "max-h-[60vh] overflow-y-auto",
-        // ── Desktop: left sidebar ─────────────────────────────────────────
         "lg:right-auto lg:bottom-auto lg:left-4",
         "lg:top-1/2 lg:-translate-y-1/2",
         "lg:w-64 lg:rounded-xl",
         "lg:max-h-none lg:overflow-visible"
       )}
     >
-      {/* ── Mobile drag handle ──────────────────────────────────────────── */}
       <div className="mb-3 flex justify-center lg:hidden">
         <div className="h-1 w-8 rounded-full bg-sand-400" aria-hidden="true" />
       </div>
 
-      {/* ── Grid size ───────────────────────────────────────────────────── */}
       <SectionLabel>Grid size</SectionLabel>
       <GridSizePicker value={gridSize} onChange={onGridSizeChange} />
 
       <Divider />
 
-      {/* ── Messiness ───────────────────────────────────────────────────── */}
       <MessinessSlider value={messiness} onChange={onMessinessChange} />
 
       <Divider />
 
-      {/* ── Render mode ─────────────────────────────────────────────────── */}
       <SectionLabel>Render mode</SectionLabel>
       <div className="flex gap-1.5" role="group" aria-label="Render mode">
         {(["flat", "stud"] as RenderMode[]).map((mode) => {
@@ -156,7 +122,6 @@ export function ControlPanel({
 
       <Divider />
 
-      {/* ── Grid lines toggle ───────────────────────────────────────────── */}
       <button
         type="button"
         onClick={onGridToggle}
@@ -177,7 +142,6 @@ export function ControlPanel({
         )}>G</Kbd>
       </button>
 
-      {/* ── Sound toggle ────────────────────────────────────────────────── */}
       <button
         type="button"
         onClick={onSoundToggle}
@@ -201,7 +165,6 @@ export function ControlPanel({
 
       <Divider />
 
-      {/* ── Estimates ───────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <span className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
           ~{pieces.toLocaleString()} pieces
@@ -213,9 +176,7 @@ export function ControlPanel({
 
       <Divider />
 
-      {/* ── Actions ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-2">
-        {/* Primary — Build it */}
         <button
           type="button"
           onClick={onBuild}
@@ -235,7 +196,6 @@ export function ControlPanel({
           )}
         </button>
 
-        {/* Secondary — Reset */}
         <button
           type="button"
           onClick={onReset}

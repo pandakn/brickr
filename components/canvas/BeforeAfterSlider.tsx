@@ -1,23 +1,7 @@
 'use client'
 
-/**
- * BeforeAfterSlider
- *
- * Horizontal drag-reveal that shows the original photo on the left and the
- * LEGO pixel-art canvas on the right.  Both layers are full-size and clipped
- * using CSS `clip-path: inset()` so layout does not shift during drag.
- *
- * Interaction
- * ───────────
- * Uses the Pointer Events API with `setPointerCapture` so dragging remains
- * responsive even when the pointer leaves the element mid-drag.
- * No external library is required.
- */
-
 import { useRef, useState, useCallback } from 'react'
 import { cn } from '@/lib/cn'
-
-// ─── Types ────────────────────────────────────────────────────────────────
 
 export interface BeforeAfterSliderProps {
   /** Object URL (or any valid src) of the original uploaded image. */
@@ -26,8 +10,6 @@ export interface BeforeAfterSliderProps {
   legoCanvas: React.ReactNode
   className?: string
 }
-
-// ─── Component ────────────────────────────────────────────────────────────
 
 export function BeforeAfterSlider({
   originalSrc,
@@ -39,7 +21,6 @@ export function BeforeAfterSlider({
   const [splitPct, setSplitPct] = useState(50)
   const isDragging = useRef(false)
 
-  // ── Pointer handlers ───────────────────────────────────────────────────
 
   const updateSplit = useCallback((clientX: number) => {
     const rect = containerRef.current?.getBoundingClientRect()
@@ -70,7 +51,6 @@ export function BeforeAfterSlider({
     isDragging.current = false
   }, [])
 
-  // ── Render ─────────────────────────────────────────────────────────────
 
   return (
     <div

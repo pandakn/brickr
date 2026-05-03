@@ -1,20 +1,5 @@
 "use client"
 
-/**
- * DropZone
- *
- * Drag-and-drop image upload area built on react-dropzone (the same
- * underlying library used by Aceternity's FileUpload component).
- * Wraps the interaction zone with BackgroundBeams for ambience.
- *
- * Validation
- * ──────────
- * • Accepted types: image/jpeg, image/png, image/webp
- * • Maximum file size: 10 MB
- * • Single file only
- * Error messages surface inline — no toast or modal needed.
- */
-
 import { useState, useCallback } from "react"
 import { useDropzone, type FileRejection } from "react-dropzone"
 import { BackgroundBeams } from "@/components/ui/background-beams"
@@ -28,9 +13,6 @@ const ACCEPTED_TYPES = {
 
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 
-// ─── Brick icon ───────────────────────────────────────────────────────────
-
-/** Top-down silhouette of a 1×2 LEGO brick — SVG only, no emoji. */
 function BrickIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -81,13 +63,9 @@ function BrickIcon({ className }: { className?: string }) {
   )
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────
-
 export interface DropZoneProps {
   onFile: (file: File) => void
 }
-
-// ─── Component ────────────────────────────────────────────────────────────
 
 export function DropZone({ onFile }: DropZoneProps) {
   const [error, setError] = useState<string | null>(null)
@@ -158,10 +136,6 @@ export function DropZone({ onFile }: DropZoneProps) {
 
         <p className="mt-1 font-display text-sm text-sand-500">
           or click to browse
-        </p>
-
-        <p className="mt-3 font-mono text-[10px] tracking-widest text-sand-400 uppercase">
-          JPG · PNG · WebP · max 10&nbsp;MB
         </p>
 
         <p className="mt-3 font-mono text-[10px] tracking-widest text-sand-400 uppercase">

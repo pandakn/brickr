@@ -1,26 +1,7 @@
 "use client"
 
-/**
- * StudCell
- *
- * The atomic visual unit of the brick canvas.  Renders one LEGO-coloured
- * square, optionally with a raised circular stud on top.
- *
- * Animation strategy (per AGENTS.md motion rules)
- * ────────────────────────────────────────────────
- * • Build-in  → `animate-build-in` on the outer wrapper.  The wrapper is a
- *   thin layout shell so the animation only affects opacity/scale without
- *   competing with background-colour transitions on the inner colour block.
- * • Hover pop → `hover:animate-stud-pop` on the inner colour block.
- *   Placing the two animations on separate elements prevents them from
- *   clobbering each other's CSS `animation` property.
- * • Rule: never `transition-all` on canvas cells — keyframes only.
- */
-
 import { cn } from "@/lib/cn"
 import type { LegoColor, RenderMode } from "@/types"
-
-// ─── Types ────────────────────────────────────────────────────────────────
 
 export interface StudCellProps {
   color: LegoColor | null
@@ -34,8 +15,6 @@ export interface StudCellProps {
   animationDelay: number
   onClick?: () => void
 }
-
-// ─── Component ────────────────────────────────────────────────────────────
 
 export function StudCell({
   color,

@@ -1,0 +1,107 @@
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { renderHook, act } from "@testing-library/react"
+import { useBrickCanvas } from "./useBrickCanvas"
+import type { LegoColor } from "@/types"
+
+describe("useBrickCanvas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("should initialize with default state", () => {
+    const { result } = renderHook(() => useBrickCanvas())
+
+    expect(result.current.state.gridSize).toBe(32)
+    expect(result.current.state.messiness).toBe(0)
+    expect(result.current.state.pixelMatrix).toEqual([])
+    expect(result.current.state.isBuilding).toBe(false)
+  })
+
+  it("should update grid size", () => {
+    const { result } = renderHook(() => useBrickCanvas())
+
+    act(() => {
+      result.current.setGridSize(64)
+    })
+
+    expect(result.current.state.gridSize).toBe(64)
+  })
+
+  it("should update messiness within bounds", () => {
+    const { result } = renderHook(() => useBrickCanvas())
+
+    act(() => {
+      result.current.setMessiness(50)
+    })
+    expect(result.current.state.messiness).toBe(50)
+
+    act(() => {
+      result.current.setMessiness(150)
+    })
+    expect(result.current.state.messiness).toBe(100)
+
+    act(() => {
+      result.current.setMessiness(-10)
+    })
+    expect(result.current.state.messiness).toBe(0)
+  })
+
+  it("should toggle grid", () => {
+    const { result } = renderHook(() => useBrickCanvas())
+
+    expect(result.current.state.showGrid).toBe(false)
+
+    act(() => {
+      result.current.toggleGrid()
+    })
+
+    expect(result.current.state.showGrid).toBe(true)
+  })
+
+  it("should handle cell click to remove and restore", () => {
+    const { result } = renderHook(() => useBrickCanvas())
+
+    const mockColor: LegoColor = {
+      id: "1",
+      name: "Red",
+      hex: "#FF0000",
+      lab: [0, 0, 0],
+    }
+    const mockMatrix = [[mockColor]]
+    const mockImageData = new ImageData(new Uint8ClampedArray(4), 1, 1)
+
+    act(() => {
+      result.current.loadImage(mockMatrix, mockImageData)
+    })
+
+    expect(result.current.state.pixelMatrix[0][0]).toEqual(mockColor)
+
+    // Click to remove
+    act(() => {
+      result.current.handleCellClick(0, 0)
+    })
+    expect(result.current.state.pixelMatrix[0][0]).toBeNull()
+
+    // Click to restore
+    act(() => {
+      result.current.handleCellClick(0, 0)
+    })
+    expect(result.current.state.pixelMatrix[0][0]).toEqual(mockColor)
+  })
+
+  it("should reset state", () => {
+    const { result } = renderHook(() => useBrickCanvas())
+
+    act(() => {
+      result.current.setGridSize(64)
+      result.current.setMessiness(50)
+    })
+
+    act(() => {
+      result.current.reset()
+    })
+
+    expect(result.current.state.gridSize).toBe(32)
+    expect(result.current.state.messiness).toBe(0)
+  })
+})

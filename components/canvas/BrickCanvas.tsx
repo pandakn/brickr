@@ -1,36 +1,8 @@
 'use client'
 
-/**
- * BrickCanvas
- *
- * Renders the full pixel matrix as a CSS grid of StudCell components.
- *
- * Cell-size strategy
- * ──────────────────
- * A ResizeObserver watches the container div.  On every resize it computes
- *   cellSize = Math.floor(containerWidth / gridSize)
- * and re-renders.  The `cellSize` prop is used as the initial value (before
- * the first observer callback) so there is no layout flash.
- *
- * Scrollability
- * ─────────────
- * The outer container is `overflow-auto` so if the computed grid is wider or
- * taller than the viewport the user can scroll to see the whole canvas.
- *
- * Build animation
- * ───────────────
- * Each StudCell receives `animationDelay = linearIndex * 16` (ms) when
- * `isBuilding` is true, creating a progressive reveal effect.  When not
- * building, all delays are 0 (instant appearance).
- * The `buildKey` prop must be embedded in cell keys so that changing it
- * forces remounts, allowing animate-build-in to replay on each build.
- */
-
 import { useEffect, useRef, useState, useMemo } from 'react'
 import type { LegoColor, RenderMode } from '@/types'
 import { StudCell } from './StudCell'
-
-// ─── Types ────────────────────────────────────────────────────────────────
 
 export interface BrickCanvasProps {
   matrix: (LegoColor | null)[][]
@@ -51,8 +23,6 @@ export interface BrickCanvasProps {
   onCellClick: (row: number, col: number) => void
 }
 
-// ─── Component ────────────────────────────────────────────────────────────
-
 export function BrickCanvas({
   matrix,
   renderMode,
@@ -68,7 +38,7 @@ export function BrickCanvas({
   // Number of columns = number of rows (square grid)
   const gridSize = matrix.length > 0 ? matrix[0].length : 0
 
-  // ── Auto-compute cell size from container width ───────────────────────────
+
   useEffect(() => {
     if (gridSize === 0) return
     const el = containerRef.current
@@ -87,10 +57,7 @@ export function BrickCanvas({
     return () => observer.disconnect()
   }, [gridSize, showGrid])
 
-  // ── Grid layout via inline style (dynamic column count) ───────────────────
-  // Using CSS custom-property grid avoids Tailwind's JIT scanning limitation
-  // for dynamic column counts (grid-cols-[N] would need N to be statically
-  // known at build time).
+
   const gridStyle = useMemo(
     () => ({
       display: 'grid' as const,
@@ -103,7 +70,6 @@ export function BrickCanvas({
     [gridSize, computedCellSize, showGrid],
   )
 
-  // ── Empty state ───────────────────────────────────────────────────────────
   if (matrix.length === 0) {
     return (
       <div
@@ -114,7 +80,6 @@ export function BrickCanvas({
     )
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
       ref={containerRef}
