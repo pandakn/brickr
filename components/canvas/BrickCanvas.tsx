@@ -44,11 +44,12 @@ export function BrickCanvas({
     if (!el) return
 
     const observer = new ResizeObserver(([entry]) => {
-      const containerWidth = entry.contentRect.width
+      const { width, height } = entry.contentRect
       // Subtract 1 px for each gap when showGrid is on
       const gapTotal = showGrid ? gridSize - 1 : 0
-      const usable = containerWidth - gapTotal
-      const size = Math.max(4, Math.floor(usable / gridSize))
+      const usableW = width - gapTotal
+      const usableH = height - gapTotal
+      const size = Math.max(4, Math.floor(Math.min(usableW, usableH) / gridSize))
       setComputedCellSize(size)
     })
 
@@ -82,7 +83,7 @@ export function BrickCanvas({
   return (
     <div
       ref={containerRef}
-      className="w-full overflow-auto"
+      className="flex h-full w-full items-center justify-center"
       aria-label="LEGO brick canvas"
     >
       <div role="grid" data-testid="brick-canvas-grid" style={gridStyle}>
