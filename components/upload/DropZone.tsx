@@ -100,7 +100,10 @@ export function DropZone({ onFile }: DropZoneProps) {
   })
 
   return (
-    <div className="relative min-h-80 w-full overflow-hidden rounded-xl">
+    <div
+      data-testid="drop-zone"
+      className="relative min-h-80 w-full overflow-hidden rounded-xl"
+    >
       {/* BackgroundBeams sits behind everything */}
       <BackgroundBeams className="opacity-25" />
 

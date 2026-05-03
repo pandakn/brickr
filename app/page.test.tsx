@@ -56,6 +56,7 @@ describe('Page component', () => {
       pieceCounts: [],
       isProcessing: false,
       error: null,
+      reset: vi.fn(),
       process: vi.fn().mockResolvedValue(undefined),
     }
 
@@ -277,5 +278,36 @@ describe('Page component', () => {
 
     expect(mockSound.playClick).toHaveBeenCalled()
     expect(mockCanvas.handleCellClick).toHaveBeenCalledWith(0, 0)
+  })
+
+  test('reset button removes all data and returns to upload state', async () => {
+    mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
+    const { rerender } = render(<Page />)
+
+    expect(screen.getByText(/Grid size/i)).toBeInTheDocument()
+    expect(screen.getByText(/Colour breakdown/i)).toBeInTheDocument()
+
+    // 2. Click Reset
+    const resetBtn = screen.getByRole('button', { name: /Reset/i })
+    fireEvent.click(resetBtn)
+
+    expect(mockCanvas.reset).toHaveBeenCalled()
+
+    mockCanvas.state.pixelMatrix = []
+    rerender(<Page />)
+
+    expect(screen.getByTestId('drop-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('control-panel')).toBeInTheDocument()
+    expect(screen.getByTestId('stats-panel')).toBeInTheDocument()
+
+    // stats panel
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('—')
+    expect(screen.queryByTestId('build-time')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('fun-message')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('build-status')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('build-progress-bar')).not.toBeInTheDocument()
+    expect(
+      screen.getByTestId('color-breakdown-empty-state')
+    ).toBeInTheDocument()
   })
 })

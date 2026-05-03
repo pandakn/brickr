@@ -15,8 +15,8 @@
  * not the "derived state" anti-pattern AGENTS.md warns against.)
  */
 
-import { useEffect, useState } from 'react'
 import type { PieceCount } from '@/types'
+import { useEffect, useState } from 'react'
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,10 @@ export function ColorBreakdown({ pieceCounts }: ColorBreakdownProps) {
 
   if (pieceCounts.length === 0) {
     return (
-      <p className="font-display text-sm text-sand-400 italic">
+      <p
+        data-testid="color-breakdown-empty-state"
+        className="font-display text-sm text-sand-400 italic"
+      >
         No pieces yet — upload an image to get started.
       </p>
     )
@@ -47,7 +50,11 @@ export function ColorBreakdown({ pieceCounts }: ColorBreakdownProps) {
   return (
     <ul className="flex flex-col gap-2.5" aria-label="Colour breakdown">
       {pieceCounts.map(({ color, count, percentage }) => (
-        <li key={color.id} className="flex items-center gap-2.5">
+        <li
+          key={color.id}
+          data-testid={`color-row-${color.id}`}
+          className="flex items-center gap-2.5"
+        >
           {/* Mini colour stud */}
           <div
             className="flex h-5 w-5 shrink-0 items-center justify-center rounded-stud"
@@ -58,7 +65,10 @@ export function ColorBreakdown({ pieceCounts }: ColorBreakdownProps) {
           </div>
 
           {/* Colour name */}
-          <span className="flex-1 truncate font-display text-sm font-bold text-sand-700">
+          <span
+            data-testid={`color-name-${color.id}`}
+            className="flex-1 truncate font-display text-sm font-bold text-sand-700"
+          >
             {color.name}
           </span>
 
@@ -68,6 +78,7 @@ export function ColorBreakdown({ pieceCounts }: ColorBreakdownProps) {
             aria-hidden="true"
           >
             <div
+              data-testid={`color-bar-${color.id}`}
               className="duration-slow h-full rounded-full transition-all"
               style={{
                 width: visible ? `${percentage}%` : '0%',
@@ -77,7 +88,10 @@ export function ColorBreakdown({ pieceCounts }: ColorBreakdownProps) {
           </div>
 
           {/* Piece count */}
-          <span className="min-w-8 text-right font-mono text-xs font-bold text-sand-500">
+          <span
+            data-testid={`color-count-${color.id}`}
+            className="min-w-8 text-right font-mono text-xs font-bold text-sand-500"
+          >
             {count}
           </span>
         </li>

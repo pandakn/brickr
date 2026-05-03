@@ -46,6 +46,8 @@ export type UseImageProcessorReturn = {
    * Resolves when state has been updated.  Rejects only on unexpected
    * exceptions — normal errors are captured into the `error` field instead.
    */
+  /** Reset all state to initial values. */
+  reset: () => void
   process: (file: File, gridSize: GridSize, messiness: number) => Promise<void>
 }
 
@@ -57,6 +59,14 @@ export function useImageProcessor(): UseImageProcessorReturn {
   const [pieceCounts, setPieceCounts] = useState<PieceCount[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const reset = useCallback(() => {
+    setMatrix(null)
+    setImageData(null)
+    setPieceCounts([])
+    setError(null)
+    setIsProcessing(false)
+  }, [])
 
   const process = useCallback(
     async (
@@ -92,5 +102,13 @@ export function useImageProcessor(): UseImageProcessorReturn {
     [] // no external dependencies — pipeline functions are module-level
   )
 
-  return { matrix, imageData, pieceCounts, isProcessing, error, process }
+  return {
+    matrix,
+    imageData,
+    pieceCounts,
+    isProcessing,
+    error,
+    reset,
+    process,
+  }
 }

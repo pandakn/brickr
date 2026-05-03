@@ -66,6 +66,7 @@ export function ControlPanel({
 
   return (
     <div
+      data-testid="control-panel"
       className={cn(
         // Shared
         'bg-sand-100/90 backdrop-blur-md',

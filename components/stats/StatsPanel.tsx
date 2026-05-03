@@ -51,6 +51,7 @@ export function StatsPanel({
 
   return (
     <div
+      data-testid="stats-panel"
       className={cn(
         // Shared
         'bg-sand-100/90 backdrop-blur-md',
@@ -70,18 +71,27 @@ export function StatsPanel({
       <p className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
         Total pieces
       </p>
-      <p className="mt-0.5 font-display text-3xl leading-none font-black text-sand-800">
+      <p
+        data-testid="total-pieces"
+        className="mt-0.5 font-display text-3xl leading-none font-black text-sand-800"
+      >
         {totalPieces > 0 ? totalPieces.toLocaleString() : '—'}
       </p>
 
       {totalPieces > 0 && (
-        <p className="mt-1 font-display text-sm text-sand-500">
+        <p
+          data-testid="build-time"
+          className="mt-1 font-display text-sm text-sand-500"
+        >
           ≈ {buildTimeMin} min to build
         </p>
       )}
 
       {funMessage && (
-        <p className="mt-2 font-display text-sm font-bold text-brick-orange">
+        <p
+          data-testid="fun-message"
+          className="mt-2 font-display text-sm font-bold text-brick-orange"
+        >
           {funMessage}
         </p>
       )}
@@ -89,15 +99,22 @@ export function StatsPanel({
       {(isBuilding || buildProgress > 0) && (
         <div className="mt-4">
           <div className="mb-1 flex items-center justify-between">
-            <span className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
+            <span
+              data-testid="build-status"
+              className="font-mono text-[10px] tracking-widest text-sand-400 uppercase"
+            >
               {isBuilding ? 'Building…' : 'Done'}
             </span>
-            <span className="font-mono text-[10px] text-sand-400">
+            <span
+              data-testid="build-progress-percent"
+              className="font-mono text-[10px] text-sand-400"
+            >
               {Math.round(buildProgress * 100)}%
             </span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-sand-200">
             <div
+              data-testid="build-progress-bar"
               className="duration-base h-full rounded-full bg-brick-red transition-all"
               style={{ width: `${buildProgress * 100}%` }}
             />
@@ -123,6 +140,7 @@ export function StatsPanel({
           <div className="flex flex-col gap-2">
             <button
               type="button"
+              data-testid="export-image-button"
               onClick={() => exportAsImage(matrix, renderMode, 16)}
               className={cn(
                 'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',
@@ -140,6 +158,7 @@ export function StatsPanel({
 
             <button
               type="button"
+              data-testid="export-guide-button"
               onClick={() => exportBuildGuide(matrix, gridSize)}
               className={cn(
                 'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',

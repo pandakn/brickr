@@ -21,22 +21,22 @@
  * slides under either panel.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { BeforeAfterSlider } from '@/components/canvas/BeforeAfterSlider'
+import { BrickCanvas } from '@/components/canvas/BrickCanvas'
+import { ControlPanel } from '@/components/controls/ControlPanel'
+import { StatsPanel } from '@/components/stats/StatsPanel'
+import { Kbd } from '@/components/ui/kbd'
+import { SparklesCore } from '@/components/ui/sparkles'
+import { DropZone } from '@/components/upload/DropZone'
 import { useBrickCanvas } from '@/hooks/useBrickCanvas'
 import { useImageProcessor } from '@/hooks/useImageProcessor'
 import { useSound } from '@/hooks/useSound'
-import { DropZone } from '@/components/upload/DropZone'
-import { BrickCanvas } from '@/components/canvas/BrickCanvas'
-import { BeforeAfterSlider } from '@/components/canvas/BeforeAfterSlider'
-import { ControlPanel } from '@/components/controls/ControlPanel'
-import { StatsPanel } from '@/components/stats/StatsPanel'
-import { SparklesCore } from '@/components/ui/sparkles'
 import { cn } from '@/lib/cn'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
+import { fetchImageAsFile } from '@/lib/imageLoader'
 import type { GridSize } from '@/types'
 import { ToyBrick } from 'lucide-react'
-import { fetchImageAsFile } from '@/lib/imageLoader'
-import { Kbd } from '@/components/ui/kbd'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
 
@@ -134,6 +134,7 @@ export default function Page() {
 
   const handleReset = () => {
     canvas.reset()
+    processor.reset()
     sourceFileRef.current = null
     setOriginalSrc((prev) => {
       if (prev) URL.revokeObjectURL(prev)
