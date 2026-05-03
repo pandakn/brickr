@@ -5,7 +5,7 @@ import { MessinessSlider } from './MessinessSlider'
 describe('MessinessSlider', () => {
   test('renders correctly with current value', () => {
     render(<MessinessSlider value={50} onChange={vi.fn()} />)
-    expect(screen.getByText('50%')).toBeInTheDocument()
+    expect(screen.getByTestId('messiness-value')).toHaveTextContent('50%')
     expect(screen.getByText('Messiness')).toBeInTheDocument()
   })
 

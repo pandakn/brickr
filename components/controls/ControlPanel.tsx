@@ -103,6 +103,7 @@ export function ControlPanel({
             <button
               key={mode}
               type="button"
+              data-testid={`render-mode-${mode}`}
               onClick={() => onRenderModeChange(mode)}
               aria-pressed={isActive}
               className={cn(
@@ -124,6 +125,7 @@ export function ControlPanel({
 
       <button
         type="button"
+        data-testid="grid-toggle"
         onClick={onGridToggle}
         aria-pressed={showGrid}
         className={cn(
@@ -150,6 +152,7 @@ export function ControlPanel({
 
       <button
         type="button"
+        data-testid="sound-toggle"
         onClick={onSoundToggle}
         aria-pressed={soundEnabled}
         className={cn(
@@ -172,10 +175,16 @@ export function ControlPanel({
       <Divider />
 
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
+        <span
+          data-testid="pieces-estimate"
+          className="font-mono text-[10px] tracking-widest text-sand-400 uppercase"
+        >
           ~{pieces.toLocaleString()} pieces
         </span>
-        <span className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
+        <span
+          data-testid="minutes-estimate"
+          className="font-mono text-[10px] tracking-widest text-sand-400 uppercase"
+        >
           ~{minutes} min
         </span>
       </div>
@@ -185,6 +194,7 @@ export function ControlPanel({
       <div className="flex flex-col gap-2">
         <button
           type="button"
+          data-testid="build-button"
           onClick={onBuild}
           disabled={!hasImage || isBuilding}
           className={cn(
@@ -204,6 +214,7 @@ export function ControlPanel({
 
         <button
           type="button"
+          data-testid="reset-button"
           onClick={onReset}
           className={cn(
             'flex items-center justify-between font-display text-sm font-extrabold',

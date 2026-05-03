@@ -133,7 +133,10 @@ export function DropZone({ onFile }: DropZoneProps) {
           )}
         />
 
-        <p className="font-display text-base font-extrabold text-sand-700">
+        <p
+          data-testid="drop-zone-heading"
+          className="font-display text-base font-extrabold text-sand-700"
+        >
           {isDragActive ? 'Drop it!' : 'Drop your image here'}
         </p>
 
@@ -146,7 +149,10 @@ export function DropZone({ onFile }: DropZoneProps) {
         </p>
 
         {error && (
-          <p className="mt-4 rounded-md bg-brick-red/10 px-3 py-1.5 font-display text-sm font-bold text-brick-red">
+          <p
+            data-testid="drop-zone-error"
+            className="mt-4 rounded-md bg-brick-red/10 px-3 py-1.5 font-display text-sm font-bold text-brick-red"
+          >
             {error}
           </p>
         )}

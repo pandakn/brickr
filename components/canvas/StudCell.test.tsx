@@ -12,10 +12,13 @@ describe('StudCell', () => {
   }
 
   test('renders nothing visible when color is null', () => {
-    const { container } = render(
+    render(
       <StudCell color={null} size={20} renderMode="stud" animationDelay={0} />
     )
-    expect(container.firstChild).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByTestId('stud-cell-empty')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    )
   })
 
   test('renders a colored button with aria-label', () => {
@@ -33,7 +36,7 @@ describe('StudCell', () => {
   })
 
   test('renders a stud when renderMode is stud', () => {
-    const { container } = render(
+    render(
       <StudCell
         color={mockColor}
         size={20}
@@ -41,9 +44,19 @@ describe('StudCell', () => {
         animationDelay={0}
       />
     )
-    // The stud is an aria-hidden div inside the button
-    const stud = container.querySelector('.rounded-full')
-    expect(stud).toBeInTheDocument()
+    expect(screen.getByTestId('stud')).toBeInTheDocument()
+  })
+
+  test('does not render a stud when renderMode is flat', () => {
+    render(
+      <StudCell
+        color={mockColor}
+        size={20}
+        renderMode="flat"
+        animationDelay={0}
+      />
+    )
+    expect(screen.queryByTestId('stud')).not.toBeInTheDocument()
   })
 
   test('calls onClick when clicked', () => {
@@ -62,7 +75,7 @@ describe('StudCell', () => {
   })
 
   test('applies animation delay', () => {
-    const { container } = render(
+    render(
       <StudCell
         color={mockColor}
         size={20}
@@ -70,7 +83,8 @@ describe('StudCell', () => {
         animationDelay={160}
       />
     )
-    const wrapper = container.querySelector('.animate-build-in')
-    expect(wrapper).toHaveStyle({ animationDelay: '160ms' })
+    expect(screen.getByTestId('stud-cell')).toHaveStyle({
+      animationDelay: '160ms',
+    })
   })
 })

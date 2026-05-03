@@ -28,7 +28,10 @@ describe('DropZone', () => {
     } as any)
 
     render(<DropZone onFile={mockOnFile} />)
-    expect(screen.getByText(/Drop your image here/i)).toBeInTheDocument()
+    expect(screen.getByTestId('drop-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('drop-zone-heading')).toHaveTextContent(
+      'Drop your image here'
+    )
   })
 
   test('shows "Drop it!" when drag is active', () => {
@@ -39,7 +42,9 @@ describe('DropZone', () => {
     } as any)
 
     render(<DropZone onFile={mockOnFile} />)
-    expect(screen.getByText(/Drop it!/i)).toBeInTheDocument()
+    expect(screen.getByTestId('drop-zone-heading')).toHaveTextContent(
+      'Drop it!'
+    )
   })
 
   test('displays error message for too large files', async () => {
@@ -67,7 +72,9 @@ describe('DropZone', () => {
       )
     })
 
-    expect(screen.getByText(/That file is too large/i)).toBeInTheDocument()
+    expect(screen.getByTestId('drop-zone-error')).toHaveTextContent(
+      /That file is too large/i
+    )
   })
 
   test('displays error message for invalid file types', async () => {
@@ -95,9 +102,9 @@ describe('DropZone', () => {
       )
     })
 
-    expect(
-      screen.getByText(/Only JPG, PNG, and WebP images are supported/i)
-    ).toBeInTheDocument()
+    expect(screen.getByTestId('drop-zone-error')).toHaveTextContent(
+      /Only JPG, PNG, and WebP images are supported/i
+    )
   })
 
   test('calls onFile when a valid file is dropped', async () => {
@@ -119,5 +126,16 @@ describe('DropZone', () => {
     })
 
     expect(mockOnFile).toHaveBeenCalledWith(mockFile)
+  })
+
+  test('does not show error in initial state', () => {
+    vi.mocked(useDropzone).mockReturnValue({
+      getRootProps: () => ({}),
+      getInputProps: () => ({}),
+      isDragActive: false,
+    } as any)
+
+    render(<DropZone onFile={mockOnFile} />)
+    expect(screen.queryByTestId('drop-zone-error')).not.toBeInTheDocument()
   })
 })

@@ -7,7 +7,7 @@ describe('BeforeAfterSlider', () => {
     const LegoCanvas = <div data-testid="lego-canvas">Lego</div>
     render(<BeforeAfterSlider originalSrc="test.jpg" legoCanvas={LegoCanvas} />)
 
-    expect(screen.getByAltText('Original image')).toBeInTheDocument()
+    expect(screen.getByTestId('before-after-original')).toBeInTheDocument()
     expect(screen.getByTestId('lego-canvas')).toBeInTheDocument()
   })
 
@@ -16,7 +16,7 @@ describe('BeforeAfterSlider', () => {
       <BeforeAfterSlider originalSrc="test.jpg" legoCanvas={<div>Lego</div>} />
     )
 
-    expect(screen.getByText('Original')).toBeInTheDocument()
-    expect(screen.getByText('LEGO')).toBeInTheDocument()
+    expect(screen.getByTestId('label-original')).toHaveTextContent('Original')
+    expect(screen.getByTestId('label-lego')).toHaveTextContent('LEGO')
   })
 })

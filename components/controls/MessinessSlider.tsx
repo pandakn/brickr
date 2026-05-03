@@ -15,7 +15,10 @@ export function MessinessSlider({ value, onChange }: MessinessSliderProps) {
         <span className="font-display text-sm font-bold text-sand-700">
           Messiness
         </span>
-        <span className="font-mono text-xs font-bold text-sand-500">
+        <span
+          data-testid="messiness-value"
+          className="font-mono text-xs font-bold text-sand-500"
+        >
           {value}%
         </span>
       </div>

@@ -72,6 +72,7 @@ export function BeforeAfterSlider({
         style={{ clipPath: `inset(0 ${100 - splitPct}% 0 0)` }}
       >
         <img
+          data-testid="before-after-original"
           src={originalSrc}
           alt="Original image"
           className="h-full w-full object-cover"
@@ -103,12 +104,18 @@ export function BeforeAfterSlider({
 
       {/* ── Corner labels ─────────────────────────────────────────────── */}
       <div className="pointer-events-none absolute top-3 left-3 z-10">
-        <span className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] tracking-widest text-white/80 uppercase">
+        <span
+          data-testid="label-original"
+          className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] tracking-widest text-white/80 uppercase"
+        >
           Original
         </span>
       </div>
       <div className="pointer-events-none absolute top-3 right-3 z-10">
-        <span className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] tracking-widest text-white/80 uppercase">
+        <span
+          data-testid="label-lego"
+          className="rounded-sm bg-black/30 px-2 py-0.5 font-mono text-[10px] tracking-widest text-white/80 uppercase"
+        >
           LEGO
         </span>
       </div>

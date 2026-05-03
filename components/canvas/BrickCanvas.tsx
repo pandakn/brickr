@@ -72,6 +72,7 @@ export function BrickCanvas({
     return (
       <div
         ref={containerRef}
+        data-testid="brick-canvas-empty"
         className="flex h-full w-full items-center justify-center"
         aria-label="Empty brick canvas"
       />
@@ -84,7 +85,7 @@ export function BrickCanvas({
       className="w-full overflow-auto"
       aria-label="LEGO brick canvas"
     >
-      <div role="grid" style={gridStyle}>
+      <div role="grid" data-testid="brick-canvas-grid" style={gridStyle}>
         {matrix.map((row, rowIdx) =>
           row.map((cell, colIdx) => {
             const linearIndex = rowIdx * gridSize + colIdx

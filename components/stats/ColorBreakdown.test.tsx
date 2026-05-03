@@ -6,7 +6,7 @@ import { ColorBreakdown } from './ColorBreakdown'
 describe('ColorBreakdown', () => {
   test('renders empty state message when no piece counts', () => {
     render(<ColorBreakdown pieceCounts={[]} />)
-    expect(screen.getByText(/No pieces yet/i)).toBeInTheDocument()
+    expect(screen.getByTestId('color-breakdown-empty-state')).toBeInTheDocument()
   })
 
   test('renders a list of colors and counts', () => {
@@ -35,8 +35,13 @@ describe('ColorBreakdown', () => {
 
     render(<ColorBreakdown pieceCounts={mockPieceCounts} />)
 
-    expect(screen.getByText('Bright Red')).toBeInTheDocument()
-    expect(screen.getByText('Bright Blue')).toBeInTheDocument()
-    expect(screen.getAllByText('10')).toHaveLength(2)
+    expect(screen.getByTestId('color-row-red')).toBeInTheDocument()
+    expect(screen.getByTestId('color-row-blue')).toBeInTheDocument()
+    expect(screen.getByTestId('color-name-red')).toHaveTextContent('Bright Red')
+    expect(screen.getByTestId('color-name-blue')).toHaveTextContent(
+      'Bright Blue'
+    )
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('10')
+    expect(screen.getByTestId('color-count-blue')).toHaveTextContent('10')
   })
 })

@@ -16,7 +16,7 @@ describe('BrickCanvas', () => {
         onCellClick={vi.fn()}
       />
     )
-    expect(screen.getByLabelText('Empty brick canvas')).toBeInTheDocument()
+    expect(screen.getByTestId('brick-canvas-empty')).toBeInTheDocument()
   })
 
   test('renders a grid of cells and handles clicks', () => {
@@ -44,6 +44,7 @@ describe('BrickCanvas', () => {
       />
     )
 
+    expect(screen.getByTestId('brick-canvas-grid')).toBeInTheDocument()
     const cells = screen.getAllByRole('button', { name: 'Red' })
     expect(cells).toHaveLength(2)
 

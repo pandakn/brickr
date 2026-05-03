@@ -25,6 +25,7 @@ export function GridSizePicker({ value, onChange }: GridSizePickerProps) {
           <button
             key={size.value}
             type="button"
+            data-testid={`grid-size-${size.value}`}
             onClick={() => onChange(size.value)}
             aria-pressed={isActive}
             className={cn(

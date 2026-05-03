@@ -23,34 +23,32 @@ describe('ControlPanel', () => {
   test('renders correctly with estimates', () => {
     render(<ControlPanel {...defaultProps} />)
     // 32 * 32 = 1024
-    expect(screen.getByText(/1,024 pieces/i)).toBeInTheDocument()
-    // (1024 * 15) / 60 = 256 minutes?
-    // Wait: 1024 * 15 = 15360. 15360 / 60 = 256.
-    expect(screen.getByText(/~256 min/i)).toBeInTheDocument()
+    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent(/1,024 pieces/i)
+    expect(screen.getByTestId('minutes-estimate')).toHaveTextContent(/~256 min/i)
   })
 
   test('toggles render mode', () => {
     render(<ControlPanel {...defaultProps} />)
-    const flatBtn = screen.getByRole('button', { name: /Flat/i })
+    const flatBtn = screen.getByTestId('render-mode-flat')
     fireEvent.click(flatBtn)
     expect(defaultProps.onRenderModeChange).toHaveBeenCalledWith('flat')
   })
 
   test('handles build button clicks', () => {
     render(<ControlPanel {...defaultProps} />)
-    const buildBtn = screen.getByRole('button', { name: /Build it/i })
+    const buildBtn = screen.getByTestId('build-button')
     fireEvent.click(buildBtn)
     expect(defaultProps.onBuild).toHaveBeenCalled()
   })
 
   test('disables build button when no image', () => {
     render(<ControlPanel {...defaultProps} hasImage={false} />)
-    const buildBtn = screen.getByRole('button', { name: /Build it/i })
+    const buildBtn = screen.getByTestId('build-button')
     expect(buildBtn).toBeDisabled()
   })
 
   test('shows building status', () => {
     render(<ControlPanel {...defaultProps} isBuilding={true} />)
-    expect(screen.getByText('Building…')).toBeInTheDocument()
+    expect(screen.getByTestId('build-button')).toHaveTextContent('Building…')
   })
 })

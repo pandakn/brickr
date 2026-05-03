@@ -25,7 +25,7 @@ export function StudCell({
 }: StudCellProps) {
   // Null cell — transparent placeholder that preserves grid layout
   if (color === null) {
-    return <div aria-hidden="true" style={{ width: size, height: size }} />
+    return <div data-testid="stud-cell-empty" aria-hidden="true" style={{ width: size, height: size }} />
   }
 
   // Stud diameter = 60% of cell size
@@ -34,6 +34,7 @@ export function StudCell({
   return (
     // Outer wrapper owns animate-build-in (avoids conflicting with hover anim)
     <div
+      data-testid="stud-cell"
       className="animate-build-in"
       style={{ animationDelay: `${animationDelay}ms` }}
     >
@@ -64,6 +65,7 @@ export function StudCell({
       >
         {renderMode === 'stud' && (
           <div
+            data-testid="stud"
             aria-hidden="true"
             className="pointer-events-none rounded-full border border-white/40 bg-white/25"
             style={{ width: studSize, height: studSize }}

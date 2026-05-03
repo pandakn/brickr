@@ -29,7 +29,21 @@ describe('StatsPanel', () => {
         renderMode="stud"
       />
     )
-    expect(screen.getAllByText('100')).toHaveLength(2) // Total and Breakdown row
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('100')
+  })
+
+  test('shows dash when no pieces', () => {
+    render(
+      <StatsPanel
+        pieceCounts={[]}
+        isBuilding={false}
+        buildProgress={0}
+        matrix={[]}
+        gridSize={32}
+        renderMode="stud"
+      />
+    )
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('—')
   })
 
   test('calculates and displays estimated build time', () => {
@@ -44,7 +58,23 @@ describe('StatsPanel', () => {
         renderMode="stud"
       />
     )
-    expect(screen.getByText(/≈ 25 min to build/i)).toBeInTheDocument()
+    expect(screen.getByTestId('build-time')).toHaveTextContent(
+      '≈ 25 min to build'
+    )
+  })
+
+  test('hides build time when there are no pieces', () => {
+    render(
+      <StatsPanel
+        pieceCounts={[]}
+        isBuilding={false}
+        buildProgress={0}
+        matrix={[]}
+        gridSize={32}
+        renderMode="stud"
+      />
+    )
+    expect(screen.queryByTestId('build-time')).not.toBeInTheDocument()
   })
 
   test('shows fun message for large piece count', () => {
@@ -65,7 +95,23 @@ describe('StatsPanel', () => {
         renderMode="stud"
       />
     )
-    expect(screen.getByText("That's a lot of bricks 👀")).toBeInTheDocument()
+    expect(screen.getByTestId('fun-message')).toHaveTextContent(
+      "That's a lot of bricks 👀"
+    )
+  })
+
+  test('does not show fun message for small piece count', () => {
+    render(
+      <StatsPanel
+        pieceCounts={mockPieceCounts}
+        isBuilding={false}
+        buildProgress={0}
+        matrix={[]}
+        gridSize={32}
+        renderMode="stud"
+      />
+    )
+    expect(screen.queryByTestId('fun-message')).not.toBeInTheDocument()
   })
 
   test('shows building status and progress', () => {
@@ -79,8 +125,43 @@ describe('StatsPanel', () => {
         renderMode="stud"
       />
     )
-    expect(screen.getByText('Building…')).toBeInTheDocument()
-    expect(screen.getByText('50%')).toBeInTheDocument()
+    expect(screen.getByTestId('build-status')).toHaveTextContent('Building…')
+    expect(screen.getByTestId('build-progress-percent')).toHaveTextContent(
+      '50%'
+    )
+    expect(screen.getByTestId('build-progress-bar')).toBeInTheDocument()
+  })
+
+  test('shows done status when build is complete', () => {
+    render(
+      <StatsPanel
+        pieceCounts={mockPieceCounts}
+        isBuilding={false}
+        buildProgress={1}
+        matrix={[]}
+        gridSize={32}
+        renderMode="stud"
+      />
+    )
+    expect(screen.getByTestId('build-status')).toHaveTextContent('Done')
+    expect(screen.getByTestId('build-progress-percent')).toHaveTextContent(
+      '100%'
+    )
+  })
+
+  test('hides build progress when not building and progress is 0', () => {
+    render(
+      <StatsPanel
+        pieceCounts={mockPieceCounts}
+        isBuilding={false}
+        buildProgress={0}
+        matrix={[]}
+        gridSize={32}
+        renderMode="stud"
+      />
+    )
+    expect(screen.queryByTestId('build-status')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('build-progress-bar')).not.toBeInTheDocument()
   })
 
   test('shows export buttons when matrix is provided', () => {
@@ -95,8 +176,8 @@ describe('StatsPanel', () => {
         renderMode="stud"
       />
     )
-    expect(screen.getByText(/Download art/i)).toBeInTheDocument()
-    expect(screen.getByText(/Download guide/i)).toBeInTheDocument()
+    expect(screen.getByTestId('export-image-button')).toBeInTheDocument()
+    expect(screen.getByTestId('export-guide-button')).toBeInTheDocument()
   })
 
   test('hides export buttons when matrix is null', () => {
@@ -110,6 +191,7 @@ describe('StatsPanel', () => {
         renderMode="stud"
       />
     )
-    expect(screen.queryByText(/Download art/i)).not.toBeInTheDocument()
+    expect(screen.queryByTestId('export-image-button')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('export-guide-button')).not.toBeInTheDocument()
   })
 })
