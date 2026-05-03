@@ -13,11 +13,11 @@
  *     useImageProcessor()
  *
  *   // When the user picks a file:
- *   await process(file, 32, 20)   // gridSize=32, messiness=20
+ *   await process(file, 32, 32, 20)   // width=32, height=32, messiness=20
  */
 
 import { useState, useCallback } from 'react'
-import type { GridSize, LegoColor, PieceCount } from '@/types'
+import type { GridDimension, LegoColor, PieceCount } from '@/types'
 import {
   resizeImage,
   buildPixelMatrix,
@@ -48,7 +48,12 @@ export type UseImageProcessorReturn = {
    */
   /** Reset all state to initial values. */
   reset: () => void
-  process: (file: File, gridSize: GridSize, messiness: number) => Promise<void>
+  process: (
+    file: File,
+    width: GridDimension,
+    height: GridDimension,
+    messiness: number
+  ) => Promise<void>
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────
@@ -71,7 +76,8 @@ export function useImageProcessor(): UseImageProcessorReturn {
   const process = useCallback(
     async (
       file: File,
-      gridSize: GridSize,
+      width: GridDimension,
+      height: GridDimension,
       messiness: number
     ): Promise<void> => {
       setIsProcessing(true)
@@ -79,7 +85,7 @@ export function useImageProcessor(): UseImageProcessorReturn {
 
       try {
         // Step 1 — Resize to the target grid resolution
-        const newImageData = await resizeImage(file, gridSize)
+        const newImageData = await resizeImage(file, width, height)
 
         // Step 2 — Quantise pixels to the LEGO palette + apply messiness
         const newMatrix = buildPixelMatrix(newImageData, messiness)

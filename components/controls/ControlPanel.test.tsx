@@ -4,14 +4,14 @@ import { ControlPanel } from './ControlPanel'
 
 describe('ControlPanel', () => {
   const defaultProps = {
-    gridSize: 32 as const,
+    gridDimensions: { width: 32 as const, height: 32 as const },
     messiness: 0,
     renderMode: 'stud' as const,
     showGrid: false,
     isBuilding: false,
     soundEnabled: true,
     hasImage: true,
-    onGridSizeChange: vi.fn(),
+    onGridDimensionsChange: vi.fn(),
     onMessinessChange: vi.fn(),
     onRenderModeChange: vi.fn(),
     onGridToggle: vi.fn(),

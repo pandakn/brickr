@@ -25,7 +25,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={0}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -39,7 +39,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={0}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -54,7 +54,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={0}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -70,7 +70,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={0}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -91,7 +91,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={0}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -107,7 +107,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={0}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -121,7 +121,7 @@ describe('StatsPanel', () => {
         isBuilding={true}
         buildProgress={0.5}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -139,7 +139,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={1}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -156,7 +156,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={0}
         matrix={[]}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -172,7 +172,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={1}
         matrix={mockMatrix}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )
@@ -187,7 +187,7 @@ describe('StatsPanel', () => {
         isBuilding={false}
         buildProgress={0}
         matrix={null}
-        gridSize={32}
+        gridDimensions={{ width: 32, height: 32 }}
         renderMode="stud"
       />
     )

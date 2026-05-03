@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { cn } from '@/lib/cn'
-import type { GridSize, LegoColor, PieceCount, RenderMode } from '@/types'
+import type { GridDimensions, LegoColor, PieceCount, RenderMode } from '@/types'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
 import { ColorBreakdown } from './ColorBreakdown'
 import { Kbd } from '@/components/ui/kbd'
@@ -13,7 +13,7 @@ export interface StatsPanelProps {
   buildProgress: number // 0–1
   /** Current pixel matrix — needed for export. Pass null when no image is loaded. */
   matrix: (LegoColor | null)[][] | null
-  gridSize: GridSize
+  gridDimensions: GridDimensions
   renderMode: RenderMode
   /**
    * On mobile (< lg) the panel is hidden by default.
@@ -27,7 +27,7 @@ export function StatsPanel({
   isBuilding,
   buildProgress,
   matrix,
-  gridSize,
+  gridDimensions,
   renderMode,
   mobileVisible = false,
 }: StatsPanelProps) {
@@ -159,7 +159,7 @@ export function StatsPanel({
             <button
               type="button"
               data-testid="export-guide-button"
-              onClick={() => exportBuildGuide(matrix, gridSize)}
+              onClick={() => exportBuildGuide(matrix, gridDimensions)}
               className={cn(
                 'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',
                 'font-display text-xs font-extrabold text-sand-700',

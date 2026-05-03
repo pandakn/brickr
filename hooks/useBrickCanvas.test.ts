@@ -11,20 +11,20 @@ describe('useBrickCanvas', () => {
   test('should initialize with default state', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
-    expect(result.current.state.gridSize).toBe(32)
+    expect(result.current.state.gridDimensions).toEqual({ width: 32, height: 32 })
     expect(result.current.state.messiness).toBe(0)
     expect(result.current.state.pixelMatrix).toEqual([])
     expect(result.current.state.isBuilding).toBe(false)
   })
 
-  test('should update grid size', () => {
+  test('should update grid dimensions', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
     act(() => {
-      result.current.setGridSize(64)
+      result.current.setGridDimensions({ width: 64, height: 40 })
     })
 
-    expect(result.current.state.gridSize).toBe(64)
+    expect(result.current.state.gridDimensions).toEqual({ width: 64, height: 40 })
   })
 
   test('should update messiness within bounds', () => {
@@ -93,7 +93,7 @@ describe('useBrickCanvas', () => {
     const { result } = renderHook(() => useBrickCanvas())
 
     act(() => {
-      result.current.setGridSize(64)
+      result.current.setGridDimensions({ width: 64, height: 64 })
       result.current.setMessiness(50)
     })
 
@@ -101,7 +101,7 @@ describe('useBrickCanvas', () => {
       result.current.reset()
     })
 
-    expect(result.current.state.gridSize).toBe(32)
+    expect(result.current.state.gridDimensions).toEqual({ width: 32, height: 32 })
     expect(result.current.state.messiness).toBe(0)
   })
 })

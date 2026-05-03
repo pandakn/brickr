@@ -35,38 +35,40 @@ export function BrickCanvas({
   const containerRef = useRef<HTMLDivElement>(null)
   const [computedCellSize, setComputedCellSize] = useState(cellSize)
 
-  // Number of columns = number of rows (square grid)
-  const gridSize = matrix.length > 0 ? matrix[0].length : 0
+  const cols = matrix.length > 0 ? matrix[0].length : 0
+  const rows = matrix.length
 
   useEffect(() => {
-    if (gridSize === 0) return
+    if (cols === 0 || rows === 0) return
     const el = containerRef.current
     if (!el) return
 
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
       // Subtract 1 px for each gap when showGrid is on
-      const gapTotal = showGrid ? gridSize - 1 : 0
-      const usableW = width - gapTotal
-      const usableH = height - gapTotal
-      const size = Math.max(4, Math.floor(Math.min(usableW, usableH) / gridSize))
+      const gapW = showGrid ? cols - 1 : 0
+      const gapH = showGrid ? rows - 1 : 0
+      const usableW = width - gapW
+      const usableH = height - gapH
+      const cellW = Math.floor(usableW / cols)
+      const cellH = Math.floor(usableH / rows)
+      const size = Math.max(4, Math.min(cellW, cellH))
       setComputedCellSize(size)
     })
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [gridSize, showGrid])
+  }, [cols, rows, showGrid])
 
   const gridStyle = useMemo(
     () => ({
       display: 'grid' as const,
-      gridTemplateColumns: `repeat(${gridSize}, ${computedCellSize}px)`,
+      gridTemplateColumns: `repeat(${cols}, ${computedCellSize}px)`,
       gap: showGrid ? '1px' : '0px',
       width: 'fit-content',
-      // Crisp rendering — no anti-aliasing between adjacent cells
       imageRendering: 'pixelated' as const,
     }),
-    [gridSize, computedCellSize, showGrid]
+    [cols, computedCellSize, showGrid]
   )
 
   if (matrix.length === 0) {
@@ -89,7 +91,7 @@ export function BrickCanvas({
       <div role="grid" data-testid="brick-canvas-grid" style={gridStyle}>
         {matrix.map((row, rowIdx) =>
           row.map((cell, colIdx) => {
-            const linearIndex = rowIdx * gridSize + colIdx
+            const linearIndex = rowIdx * cols + colIdx
             return (
               <StudCell
                 // buildKey in the key forces remount on every new build so

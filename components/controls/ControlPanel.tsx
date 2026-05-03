@@ -2,13 +2,13 @@
 
 import { Volume2, VolumeX } from 'lucide-react'
 import { cn } from '@/lib/cn'
-import type { GridSize, RenderMode } from '@/types'
-import { GridSizePicker } from './GridSizePicker'
+import type { GridDimensions, RenderMode } from '@/types'
+import { GridDimensionsPicker } from './GridDimensionsPicker'
 import { MessinessSlider } from './MessinessSlider'
 import { Kbd } from '@/components/ui/kbd'
 
 export interface ControlPanelProps {
-  gridSize: GridSize
+  gridDimensions: GridDimensions
   messiness: number
   renderMode: RenderMode
   showGrid: boolean
@@ -16,7 +16,7 @@ export interface ControlPanelProps {
   soundEnabled: boolean
   /** True once an image has been loaded and the matrix is ready. */
   hasImage: boolean
-  onGridSizeChange: (size: GridSize) => void
+  onGridDimensionsChange: (dims: GridDimensions) => void
   onMessinessChange: (v: number) => void
   onRenderModeChange: (mode: RenderMode) => void
   onGridToggle: () => void
@@ -25,12 +25,12 @@ export interface ControlPanelProps {
   onReset: () => void
 }
 
-function estimatedPieces(gridSize: GridSize): number {
-  return gridSize * gridSize
+function estimatedPieces(dims: GridDimensions): number {
+  return dims.width * dims.height
 }
 
-function estimatedMinutes(gridSize: GridSize): number {
-  return Math.round((gridSize * gridSize * 15) / 60)
+function estimatedMinutes(dims: GridDimensions): number {
+  return Math.round((dims.width * dims.height * 15) / 60)
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -46,14 +46,14 @@ function Divider() {
 }
 
 export function ControlPanel({
-  gridSize,
+  gridDimensions,
   messiness,
   renderMode,
   showGrid,
   isBuilding,
   soundEnabled,
   hasImage,
-  onGridSizeChange,
+  onGridDimensionsChange,
   onMessinessChange,
   onRenderModeChange,
   onGridToggle,
@@ -61,8 +61,8 @@ export function ControlPanel({
   onBuild,
   onReset,
 }: ControlPanelProps) {
-  const pieces = estimatedPieces(gridSize)
-  const minutes = estimatedMinutes(gridSize)
+  const pieces = estimatedPieces(gridDimensions)
+  const minutes = estimatedMinutes(gridDimensions)
 
   return (
     <div
@@ -87,7 +87,10 @@ export function ControlPanel({
       </div>
 
       <SectionLabel>Grid size</SectionLabel>
-      <GridSizePicker value={gridSize} onChange={onGridSizeChange} />
+      <GridDimensionsPicker
+        value={gridDimensions}
+        onChange={onGridDimensionsChange}
+      />
 
       <Divider />
 

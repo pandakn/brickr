@@ -37,7 +37,7 @@ describe('useImageProcessor', () => {
     const mockFile = new File([''], 'test.png', { type: 'image/png' })
 
     await act(async () => {
-      await result.current.process(mockFile, 32, 0)
+      await result.current.process(mockFile, 32, 32, 0)
     })
 
     expect(result.current.isProcessing).toBe(false)
@@ -57,7 +57,7 @@ describe('useImageProcessor', () => {
     const mockFile = new File([''], 'test.png', { type: 'image/png' })
 
     await act(async () => {
-      await result.current.process(mockFile, 32, 0)
+      await result.current.process(mockFile, 32, 32, 0)
     })
 
     expect(result.current.isProcessing).toBe(false)

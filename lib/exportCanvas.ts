@@ -14,7 +14,7 @@
  *    → brickr-guide.png   (labeled instruction grid with Excel coordinates)
  */
 
-import type { GridSize, LegoColor, RenderMode } from '@/types'
+import type { GridDimensions, LegoColor, RenderMode } from '@/types'
 
 // ─── Guide layout constants ────────────────────────────────────────────────
 
@@ -184,7 +184,7 @@ export function exportAsImage(
  */
 export function exportBuildGuide(
   matrix: (LegoColor | null)[][],
-  gridSize: GridSize
+  gridDimensions: GridDimensions
 ): void {
   const rows = matrix.length
   if (rows === 0) return
@@ -278,6 +278,8 @@ export function exportBuildGuide(
   ctx.textBaseline = 'middle'
   ctx.fillText('BKR', HW / 2, HH / 2)
 
-  // Use gridSize in the filename for clarity
-  triggerDownload(canvas, `brickr-guide-${gridSize}x${gridSize}.png`)
+  triggerDownload(
+    canvas,
+    `brickr-guide-${gridDimensions.width}x${gridDimensions.height}.png`
+  )
 }

@@ -32,7 +32,7 @@ describe('Page component', () => {
     mockCanvas = {
       state: {
         pixelMatrix: [],
-        gridSize: 32,
+        gridDimensions: { width: 32, height: 32 },
         messiness: 0,
         renderMode: 'stud',
         showGrid: false,
@@ -41,7 +41,7 @@ describe('Page component', () => {
       },
       buildKey: 0,
       loadImage: vi.fn(),
-      setGridSize: vi.fn(),
+      setGridDimensions: vi.fn(),
       setMessiness: vi.fn(),
       setRenderMode: vi.fn(),
       toggleGrid: vi.fn(),
@@ -100,7 +100,7 @@ describe('Page component', () => {
       fireEvent.change(input, { target: { files: [file] } })
     })
 
-    expect(mockProcessor.process).toHaveBeenCalledWith(expect.any(File), 32, 0)
+    expect(mockProcessor.process).toHaveBeenCalledWith(expect.any(File), 32, 32, 0)
     expect(global.URL.createObjectURL).toHaveBeenCalled()
   })
 
@@ -123,7 +123,7 @@ describe('Page component', () => {
     expect(fetchImageAsFile).toHaveBeenCalledWith(
       'https://example.com/image.png'
     )
-    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 0)
+    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 32, 0)
     expect(input).toHaveValue('')
   })
 
@@ -152,13 +152,13 @@ describe('Page component', () => {
       fireEvent.change(input, { target: { files: [file] } })
     })
 
-    const size64Btn = screen.getByRole('button', { name: '64×64' })
+    const size64Btn = screen.getByRole('button', { name: '64x64' })
     fireEvent.click(size64Btn)
 
-    expect(mockCanvas.setGridSize).toHaveBeenCalledWith(64)
-    expect(mockProcessor.process).toHaveBeenCalledWith(expect.any(File), 64, 0)
+    expect(mockCanvas.setGridDimensions).toHaveBeenCalledWith({ width: 64, height: 64 })
+    expect(mockProcessor.process).toHaveBeenCalledWith(expect.any(File), 64, 64, 0)
 
-    mockCanvas.state.gridSize = 64
+    mockCanvas.state.gridDimensions = { width: 64, height: 64 }
     rerender(<Page />)
   })
 
@@ -253,7 +253,7 @@ describe('Page component', () => {
     expect(fetchImageAsFile).toHaveBeenCalledWith(
       'https://example.com/pasted.jpg'
     )
-    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 0)
+    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 32, 0)
   })
 
   test('toggles mobile stats panel', async () => {

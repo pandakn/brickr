@@ -20,8 +20,14 @@ export type LegoColor = {
 
 // ─── Canvas configuration ──────────────────────────────────────────────────
 
-/** How many LEGO studs to render along each axis. */
-export type GridSize = 12 | 25 | 32 | 40 | 64
+/** Allowed value for a single grid axis. */
+export type GridDimension = 12 | 25 | 32 | 40 | 64
+
+/** Independent width and height for a rectangular grid. */
+export type GridDimensions = {
+  width: GridDimension
+  height: GridDimension
+}
 
 /** Whether cells render as a flat square or a square with a raised circular stud. */
 export type RenderMode = 'flat' | 'stud'
@@ -37,7 +43,7 @@ export type BrickState = {
   originalImage: ImageData | null
   /** 2-D grid of mapped LEGO colours. null = cell removed by the user. */
   pixelMatrix: (LegoColor | null)[][]
-  gridSize: GridSize
+  gridDimensions: GridDimensions
   /** 0–100. Higher values introduce random colour variation across cells. */
   messiness: number
   renderMode: RenderMode
