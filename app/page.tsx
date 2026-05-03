@@ -26,6 +26,7 @@ import { BrickCanvas } from '@/components/canvas/BrickCanvas'
 import { ControlPanel } from '@/components/controls/ControlPanel'
 import { StatsPanel } from '@/components/stats/StatsPanel'
 import { Kbd } from '@/components/ui/kbd'
+import { PixelatedCanvas } from '@/components/ui/pixelated-canvas'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { DropZone } from '@/components/upload/DropZone'
 import { useBrickCanvas } from '@/hooks/useBrickCanvas'
@@ -244,7 +245,12 @@ export default function Page() {
         return URL.createObjectURL(file)
       })
       const dims = canvas.state.gridDimensions
-      void processor.process(file, dims.width, dims.height, canvas.state.messiness)
+      void processor.process(
+        file,
+        dims.width,
+        dims.height,
+        canvas.state.messiness
+      )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [processor.process, canvas.state.gridDimensions, canvas.state.messiness]
@@ -513,11 +519,8 @@ export default function Page() {
                   legoCanvas={
                     <BrickCanvas
                       matrix={canvas.state.pixelMatrix}
-                      renderMode={canvas.state.renderMode}
                       showGrid={canvas.state.showGrid}
                       cellSize={16}
-                      isBuilding={canvas.state.isBuilding}
-                      buildKey={canvas.buildKey}
                       onCellClick={handleCellClick}
                     />
                   }
@@ -526,11 +529,8 @@ export default function Page() {
               ) : (
                 <BrickCanvas
                   matrix={canvas.state.pixelMatrix}
-                  renderMode={canvas.state.renderMode}
                   showGrid={canvas.state.showGrid}
                   cellSize={16}
-                  isBuilding={canvas.state.isBuilding}
-                  buildKey={canvas.buildKey}
                   onCellClick={handleCellClick}
                 />
               )}
