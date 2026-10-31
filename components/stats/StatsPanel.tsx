@@ -15,6 +15,11 @@ export interface StatsPanelProps {
   matrix: (LegoColor | null)[][] | null
   gridDimensions: GridDimensions
   renderMode: RenderMode
+  /**
+   * True while a newer conversion is pending. Export is blocked so the user
+   * can't download a result that no longer matches the requested settings.
+   */
+  isProcessing?: boolean
 }
 
 export function StatsPanel({
@@ -24,6 +29,7 @@ export function StatsPanel({
   matrix,
   gridDimensions,
   renderMode,
+  isProcessing = false,
 }: StatsPanelProps) {
   const totalPieces = useMemo(
     () => pieceCounts.reduce((sum, pc) => sum + pc.count, 0),
@@ -126,12 +132,14 @@ export function StatsPanel({
               type="button"
               data-testid="export-image-button"
               onClick={() => exportAsImage(matrix, renderMode, 16)}
+              disabled={isProcessing}
               className={cn(
                 'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',
                 'font-display text-xs font-extrabold text-sand-700',
                 'border-sand-300 bg-sand-200',
+                'duration-micro transition-all',
                 'hover:bg-sand-300 active:scale-[0.97]',
-                'duration-micro transition-all'
+                'disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100'
               )}
             >
               <span>↓ Download art</span>
@@ -144,12 +152,14 @@ export function StatsPanel({
               type="button"
               data-testid="export-guide-button"
               onClick={() => exportBuildGuide(matrix, gridDimensions)}
+              disabled={isProcessing}
               className={cn(
                 'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',
                 'font-display text-xs font-extrabold text-sand-700',
                 'border-sand-300 bg-sand-200',
+                'duration-micro transition-all',
                 'hover:bg-sand-300 active:scale-[0.97]',
-                'duration-micro transition-all'
+                'disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100'
               )}
             >
               <span>↓ Download guide</span>
