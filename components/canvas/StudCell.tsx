@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/cn'
 import type { LegoColor, RenderMode } from '@/types'
+import type { KeyboardEvent } from 'react'
 
 export interface StudCellProps {
   color: LegoColor | null
@@ -16,6 +17,15 @@ export interface StudCellProps {
   onClick?: () => void
 }
 
+/**
+ * A `<div role="button">` gets no free keyboard activation, so Enter/Space
+ * have to be translated into clicks by hand. Space also needs preventDefault
+ * to stop the page from scrolling.
+ */
+function isActivationKey(key: string): boolean {
+  return key === 'Enter' || key === ' '
+}
+
 export function StudCell({
   color,
   size,
@@ -23,9 +33,46 @@ export function StudCell({
   animationDelay,
   onClick,
 }: StudCellProps) {
-  // Null cell — transparent placeholder that preserves grid layout
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (!isActivationKey(event.key)) return
+    event.preventDefault()
+    onClick?.()
+  }
+
+  // Null cell — a removed brick. It keeps the exact footprint of a placed
+  // brick (no grid reflow, canvas sizing untouched) and is rendered as an
+  // empty dashed slot rather than a fake brick.
   if (color === null) {
-    return <div data-testid="stud-cell-empty" aria-hidden="true" style={{ width: size, height: size }} />
+    // Without a handler there is nothing to activate, so stay decorative.
+    if (!onClick) {
+      return (
+        <div
+          data-testid="stud-cell-empty"
+          aria-hidden="true"
+          style={{ width: size, height: size }}
+        />
+      )
+    }
+
+    return (
+      <div
+        data-testid="stud-cell-empty"
+        role="button"
+        tabIndex={0}
+        aria-label="Empty position"
+        onClick={onClick}
+        onKeyDown={handleKeyDown}
+        className={cn(
+          'flex items-center justify-center',
+          'rounded-stud border border-dashed border-sand-400 bg-sand-200/40',
+          'cursor-pointer select-none',
+          // Keyframe-free hover (colour only) — no transitions on cells
+          'hover:border-brick-blue hover:bg-sand-300',
+          'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brick-blue'
+        )}
+        style={{ width: size, height: size }}
+      />
+    )
   }
 
   // Stud diameter = 60% of cell size
@@ -56,12 +103,7 @@ export function StudCell({
           backgroundColor: color.hex, // only inline style allowed on canvas cells
         }}
         onClick={onClick}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            onClick?.()
-          }
-        }}
+        onKeyDown={handleKeyDown}
       >
         {renderMode === 'stud' && (
           <div

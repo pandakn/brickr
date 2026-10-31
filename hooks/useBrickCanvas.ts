@@ -19,14 +19,14 @@
  */
 
 import { useState, useCallback, useRef } from 'react'
-import type { BrickState, GridSize, LegoColor, RenderMode } from '@/types'
+import type { BrickState, GridDimensions, LegoColor, RenderMode } from '@/types'
 
 // ─── Default state ────────────────────────────────────────────────────────
 
 const DEFAULT_STATE: BrickState = {
   originalImage: null,
   pixelMatrix: [],
-  gridSize: 32,
+  gridDimensions: { width: 32, height: 32 },
   messiness: 0,
   renderMode: 'stud',
   showGrid: false,
@@ -49,14 +49,14 @@ export type UseBrickCanvasReturn = {
    * individual pixels can be looked up by cell index for restoration.
    */
   loadImage: (matrix: LegoColor[][], imageData: ImageData) => void
-  setGridSize: (size: GridSize) => void
+  setGridDimensions: (dims: GridDimensions) => void
   setMessiness: (value: number) => void
   setRenderMode: (mode: RenderMode) => void
   toggleGrid: () => void
   /**
    * Kick off the progressive build animation.
    * Sets isBuilding → true, animates buildProgress 0 → 1 over
-   * (gridSize² × 16 ms), then sets isBuilding → false.
+   * (width × height × 16 ms), then sets isBuilding → false.
    */
   startBuild: () => void
   /**
@@ -75,11 +75,11 @@ export function useBrickCanvas(): UseBrickCanvasReturn {
   const [buildKey, setBuildKey] = useState(0)
 
   /**
-   * Tracks the current gridSize so rAF callbacks in startBuild can read it
+   * Tracks the current gridDimensions so rAF callbacks in startBuild can read it
    * without being listed as useCallback deps.
-   * Only mutated inside setGridSize, loadImage, and reset — never during render.
+   * Only mutated inside setGridDimensions, loadImage, and reset — never during render.
    */
-  const gridSizeRef = useRef<GridSize>(DEFAULT_STATE.gridSize)
+  const gridDimensionsRef = useRef<GridDimensions>(DEFAULT_STATE.gridDimensions)
 
   /** Clean matrix from image processor, used to restore removed cells. */
   const originalMatrixRef = useRef<LegoColor[][]>([])
@@ -93,7 +93,7 @@ export function useBrickCanvas(): UseBrickCanvasReturn {
     (matrix: LegoColor[][], imageData: ImageData): void => {
       originalMatrixRef.current = matrix
       setState((prev) => {
-        gridSizeRef.current = prev.gridSize // keep ref in sync on load
+        gridDimensionsRef.current = prev.gridDimensions // keep ref in sync on load
         return {
           ...prev,
           originalImage: imageData,
@@ -106,11 +106,11 @@ export function useBrickCanvas(): UseBrickCanvasReturn {
     []
   )
 
-  // ── setGridSize ──────────────────────────────────────────────────────────
+  // ── setGridDimensions ────────────────────────────────────────────────────
 
-  const setGridSize = useCallback((size: GridSize): void => {
-    gridSizeRef.current = size
-    setState((prev) => ({ ...prev, gridSize: size }))
+  const setGridDimensions = useCallback((dims: GridDimensions): void => {
+    gridDimensionsRef.current = dims
+    setState((prev) => ({ ...prev, gridDimensions: dims }))
   }, [])
 
   // ── setMessiness ─────────────────────────────────────────────────────────
@@ -146,10 +146,10 @@ export function useBrickCanvas(): UseBrickCanvasReturn {
       buildRafRef.current = null
     }
 
-    // Read gridSize from the ref (safe: not a render-phase read)
-    const gridSize = gridSizeRef.current
+    // Read gridDimensions from the ref (safe: not a render-phase read)
+    const dims = gridDimensionsRef.current
     // Total animation duration: each cell reveals 16 ms after the previous one
-    const totalDuration = gridSize * gridSize * 16
+    const totalDuration = dims.width * dims.height * 16
 
     // Increment buildKey so BrickCanvas remounts cells → animate-build-in replays
     setBuildKey((k) => k + 1)
@@ -213,7 +213,7 @@ export function useBrickCanvas(): UseBrickCanvasReturn {
       buildRafRef.current = null
     }
     originalMatrixRef.current = []
-    gridSizeRef.current = DEFAULT_STATE.gridSize
+    gridDimensionsRef.current = DEFAULT_STATE.gridDimensions
     setState(DEFAULT_STATE)
     setBuildKey(0)
   }, [])
@@ -224,7 +224,7 @@ export function useBrickCanvas(): UseBrickCanvasReturn {
     state,
     buildKey,
     loadImage,
-    setGridSize,
+    setGridDimensions,
     setMessiness,
     setRenderMode,
     toggleGrid,

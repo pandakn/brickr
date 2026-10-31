@@ -2,13 +2,14 @@
 
 import { Volume2, VolumeX } from 'lucide-react'
 import { cn } from '@/lib/cn'
-import type { GridSize, RenderMode } from '@/types'
-import { GridSizePicker } from './GridSizePicker'
+import { estimateBuildMinutes } from '@/lib/buildEstimate'
+import type { GridDimensions, RenderMode } from '@/types'
+import { GridDimensionsPicker } from './GridDimensionsPicker'
 import { MessinessSlider } from './MessinessSlider'
 import { Kbd } from '@/components/ui/kbd'
 
 export interface ControlPanelProps {
-  gridSize: GridSize
+  gridDimensions: GridDimensions
   messiness: number
   renderMode: RenderMode
   showGrid: boolean
@@ -16,21 +17,19 @@ export interface ControlPanelProps {
   soundEnabled: boolean
   /** True once an image has been loaded and the matrix is ready. */
   hasImage: boolean
-  onGridSizeChange: (size: GridSize) => void
+  /**
+   * Physical pieces in the current committed matrix (empty cells excluded).
+   * Only used once `hasImage` is true — before that the panel shows the
+   * grid-capacity estimate instead.
+   */
+  totalPieces: number
+  onGridDimensionsChange: (dims: GridDimensions) => void
   onMessinessChange: (v: number) => void
   onRenderModeChange: (mode: RenderMode) => void
   onGridToggle: () => void
   onSoundToggle: () => void
   onBuild: () => void
   onReset: () => void
-}
-
-function estimatedPieces(gridSize: GridSize): number {
-  return gridSize * gridSize
-}
-
-function estimatedMinutes(gridSize: GridSize): number {
-  return Math.round((gridSize * gridSize * 15) / 60)
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -46,14 +45,15 @@ function Divider() {
 }
 
 export function ControlPanel({
-  gridSize,
+  gridDimensions,
   messiness,
   renderMode,
   showGrid,
   isBuilding,
   soundEnabled,
   hasImage,
-  onGridSizeChange,
+  totalPieces,
+  onGridDimensionsChange,
   onMessinessChange,
   onRenderModeChange,
   onGridToggle,
@@ -61,33 +61,26 @@ export function ControlPanel({
   onBuild,
   onReset,
 }: ControlPanelProps) {
-  const pieces = estimatedPieces(gridSize)
-  const minutes = estimatedMinutes(gridSize)
+  // Before generation we can only estimate from grid capacity. Afterwards the
+  // numbers come from the committed matrix, so removed cells stop counting.
+  const capacity = gridDimensions.width * gridDimensions.height
+  const pieces = hasImage ? totalPieces : capacity
+  const minutes = estimateBuildMinutes(pieces)
 
   return (
     <div
       data-testid="control-panel"
       className={cn(
-        // Shared
         'bg-sand-100/90 backdrop-blur-md',
         'border border-sand-300',
-        'z-20 p-5 shadow-floating',
-        'duration-base transition-all',
-        'fixed right-0 bottom-0 left-0',
-        'rounded-t-xl',
-        'max-h-[60vh] overflow-y-auto',
-        'lg:right-auto lg:bottom-auto lg:left-4',
-        'lg:top-1/2 lg:-translate-y-1/2',
-        'lg:w-64 lg:rounded-xl',
-        'lg:max-h-none lg:overflow-visible'
+        'p-5 shadow-floating'
       )}
     >
-      <div className="mb-3 flex justify-center lg:hidden">
-        <div className="h-1 w-8 rounded-full bg-sand-400" aria-hidden="true" />
-      </div>
-
       <SectionLabel>Grid size</SectionLabel>
-      <GridSizePicker value={gridSize} onChange={onGridSizeChange} />
+      <GridDimensionsPicker
+        value={gridDimensions}
+        onChange={onGridDimensionsChange}
+      />
 
       <Divider />
 
@@ -179,13 +172,15 @@ export function ControlPanel({
           data-testid="pieces-estimate"
           className="font-mono text-[10px] tracking-widest text-sand-400 uppercase"
         >
-          ~{pieces.toLocaleString()} pieces
+          {hasImage ? '' : '~'}
+          {pieces.toLocaleString()} pieces
         </span>
         <span
           data-testid="minutes-estimate"
           className="font-mono text-[10px] tracking-widest text-sand-400 uppercase"
         >
-          ~{minutes} min
+          {hasImage ? '≈ ' : '~'}
+          {minutes} min
         </span>
       </div>
 
@@ -230,9 +225,6 @@ export function ControlPanel({
           </Kbd>
         </button>
       </div>
-
-      {/* Bottom safe-area spacer (mobile, for devices with home indicator) */}
-      <div className="h-safe-b lg:hidden" />
     </div>
   )
 }

@@ -11,10 +11,12 @@
  *    → brickr-export.png  (pixel-art render at cellSize px per stud)
  *
  *  exportBuildGuide(matrix, gridSize)
- *    → brickr-guide.png   (labeled instruction grid with Excel coordinates)
+ *    → brickr-guide-<w>x<h>.png
+ *      (labeled instruction grid with Excel coordinates and a code legend)
  */
 
-import type { GridSize, LegoColor, RenderMode } from '@/types'
+import type { GridDimensions, LegoColor, RenderMode } from '@/types'
+import { getColorCode } from './colorCodes'
 
 // ─── Guide layout constants ────────────────────────────────────────────────
 
@@ -22,8 +24,21 @@ const GUIDE_CELL = 28 // px — data cell size
 const GUIDE_HDR_W = 28 // px — row-number column width
 const GUIDE_HDR_H = 24 // px — column-label row height
 const GUIDE_GAP = 1 // px — gap between cells (doubles as grid line)
-const GUIDE_FONT = 9 // px — abbreviation text inside cells
+const GUIDE_FONT = 9 // px — code text inside cells
 const GUIDE_HDR_FONT = 8 // px — header label text
+
+// ─── Legend layout constants ───────────────────────────────────────────────
+
+const LEGEND_GAP = 18 // px — space between the grid and the legend title
+const LEGEND_PAD = 12 // px — left/right/bottom margin around legend content
+const LEGEND_TITLE_H = 18 // px — legend title row height
+const LEGEND_ROW_H = 26 // px — legend entry row height
+const LEGEND_SWATCH = 22 // px — swatch square size (holds the code)
+const LEGEND_TEXT_GAP = 8 // px — gap between swatch and colour name
+const LEGEND_COL_GAP = 16 // px — gap between legend columns
+const LEGEND_CODE_FONT = 9 // px — code inside the swatch
+const LEGEND_NAME_FONT = 10 // px — colour name text
+const LEGEND_TITLE_FONT = 10 // px — legend title text
 
 // ─── Private helpers ──────────────────────────────────────────────────────
 
@@ -39,20 +54,6 @@ function colLabel(idx: number): string {
 }
 
 /**
- * Short abbreviation for a LEGO colour, derived from its kebab-case `id`.
- *
- * Single-word ids  → first character uppercase:  "white"   → "W"
- * Multi-word ids   → initials of first two words: "dark-red" → "DR"
- *
- * All 20 palette entries produce unique abbreviations with this scheme.
- */
-function colorAbbrev(color: LegoColor): string {
-  const words = color.id.split('-')
-  if (words.length === 1) return words[0].charAt(0).toUpperCase()
-  return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase()
-}
-
-/**
  * Perceived luminance of a hex colour (0–1, Rec. 709 weighting).
  * Used to choose dark vs. light label text for contrast.
  */
@@ -61,6 +62,140 @@ function hexLuma(hex: string): number {
   const g = parseInt(hex.slice(3, 5), 16) / 255
   const b = parseInt(hex.slice(5, 7), 16) / 255
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/** Label colour with enough contrast against `hex`. */
+function labelColor(hex: string): string {
+  return hexLuma(hex) <= 0.35 ? 'rgba(255,255,255,0.90)' : 'rgba(0,0,0,0.75)'
+}
+
+// ─── Legend helpers ───────────────────────────────────────────────────────
+
+type LegendEntry = {
+  color: LegoColor
+  code: string
+}
+
+/**
+ * Unique colours in first-appearance (row-major) order.
+ * Order is stable for a given matrix and independent of palette order.
+ */
+function collectLegendEntries(matrix: (LegoColor | null)[][]): LegendEntry[] {
+  const seen = new Set<string>()
+  const entries: LegendEntry[] = []
+
+  for (const row of matrix) {
+    for (const color of row) {
+      if (!color || seen.has(color.id)) continue
+      seen.add(color.id)
+      entries.push({ color, code: getColorCode(color) })
+    }
+  }
+
+  return entries
+}
+
+/**
+ * Measure the widest legend entry so the legend never overflows the canvas.
+ *
+ * Every entry is laid out on the same width (the widest one), which keeps the
+ * columns aligned. The code is drawn inside the swatch, so only the colour
+ * name contributes to the text width.
+ */
+function measureLegendEntryWidth(
+  ctx: CanvasRenderingContext2D,
+  entries: LegendEntry[]
+): number {
+  if (entries.length === 0) return 0
+
+  ctx.font = `${LEGEND_NAME_FONT}px monospace`
+  const textWidth = Math.max(
+    ...entries.map((entry) => ctx.measureText(entry.color.name).width)
+  )
+
+  return LEGEND_SWATCH + LEGEND_TEXT_GAP + textWidth
+}
+
+/**
+ * Column count and total height needed to lay the legend out in `width`.
+ */
+function legendLayout(
+  entries: LegendEntry[],
+  entryWidth: number,
+  width: number
+): { cols: number; rows: number; width: number; height: number } {
+  if (entries.length === 0) {
+    return { cols: 0, rows: 0, width: 0, height: 0 }
+  }
+
+  const available = width - LEGEND_PAD * 2
+  const cols = Math.max(
+    1,
+    Math.floor((available + LEGEND_COL_GAP) / (entryWidth + LEGEND_COL_GAP))
+  )
+  const rows = Math.ceil(entries.length / cols)
+  const legendWidth =
+    LEGEND_PAD * 2 + cols * entryWidth + (cols - 1) * LEGEND_COL_GAP
+  const height = LEGEND_GAP + LEGEND_TITLE_H + rows * LEGEND_ROW_H + LEGEND_PAD
+
+  return { cols, rows, width: legendWidth, height }
+}
+
+/**
+ * Draw the colour legend below the guide grid: one entry per colour used,
+ * each with a swatch (showing the same canonical code as the cell), the code
+ * and the readable colour name.
+ */
+function drawLegend(
+  ctx: CanvasRenderingContext2D,
+  entries: LegendEntry[],
+  entryWidth: number,
+  cols: number,
+  top: number
+): void {
+  if (entries.length === 0) return
+
+  const titleY = top + LEGEND_GAP + LEGEND_TITLE_H / 2
+  const entriesTop = top + LEGEND_GAP + LEGEND_TITLE_H
+
+  ctx.fillStyle = '#1A1A1A' // brick-black
+  ctx.font = `bold ${LEGEND_TITLE_FONT}px monospace`
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('COLOUR LEGEND', LEGEND_PAD, titleY)
+
+  entries.forEach((entry, index) => {
+    const col = index % cols
+    const row = Math.floor(index / cols)
+    const x = LEGEND_PAD + col * (entryWidth + LEGEND_COL_GAP)
+    const y = entriesTop + row * LEGEND_ROW_H
+    const swatchY = y + (LEGEND_ROW_H - LEGEND_SWATCH) / 2
+
+    // Swatch — same fill as the guide cell so the legend reads as a key.
+    ctx.fillStyle = entry.color.hex
+    ctx.fillRect(x, swatchY, LEGEND_SWATCH, LEGEND_SWATCH)
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'
+    ctx.lineWidth = 1
+    ctx.strokeRect(x, swatchY, LEGEND_SWATCH, LEGEND_SWATCH)
+
+    // Canonical code on the swatch, using the cell contrast rules.
+    ctx.fillStyle = labelColor(entry.color.hex)
+    ctx.font = `bold ${LEGEND_CODE_FONT}px monospace`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(entry.code, x + LEGEND_SWATCH / 2, swatchY + LEGEND_SWATCH / 2)
+
+    // Readable colour name on the white legend background.
+    ctx.fillStyle = '#3D332A' // sand-700
+    ctx.font = `${LEGEND_NAME_FONT}px monospace`
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(
+      entry.color.name,
+      x + LEGEND_SWATCH + LEGEND_TEXT_GAP,
+      swatchY + LEGEND_SWATCH / 2
+    )
+  })
 }
 
 /** Trigger a browser PNG download from a canvas element. */
@@ -168,23 +303,28 @@ export function exportAsImage(
 
 /**
  * Render a labeled instruction grid with Excel-style coordinates (A1, B2…)
- * and download as `brickr-guide.png`.
+ * plus a colour-code legend, and download as
+ * `brickr-guide-<width>x<height>.png`.
  *
  * Layout
  * ──────
  * ┌──────┬─────┬─────┬── … ──┐
  * │ BKR  │  A  │  B  │       │  ← column-letter header row
  * ├──────┼─────┼─────┼── … ──┤
- * │  1   │[W ] │[BR] │       │  ← data row (coloured + abbreviation)
- * │  2   │[DG] │[W ] │       │
+ * │  1   │[WH] │[BP] │       │  ← data row (coloured + canonical code)
+ * │  2   │[DG] │[PU] │       │
  * │  …   │     │     │       │
  * └──────┴─────┴─────┴── … ──┘
+ *  COLOUR LEGEND
+ *  [BP] Bright Pink   [PU] Bright Purple   …
  *
- * Each cell shows a 1–2 character abbreviation derived from the colour id.
+ * Each cell shows the canonical code from `COLOR_CODES`, and the legend
+ * decodes every colour present in the matrix. The canvas grows to fit the
+ * legend below the grid, so the two never overlap.
  */
 export function exportBuildGuide(
   matrix: (LegoColor | null)[][],
-  gridSize: GridSize
+  gridDimensions: GridDimensions
 ): void {
   const rows = matrix.length
   if (rows === 0) return
@@ -196,19 +336,29 @@ export function exportBuildGuide(
   const HH = GUIDE_HDR_H
   const G = GUIDE_GAP
 
-  const canvasW = HW + cols * (C + G) + G
-  const canvasH = HH + rows * (C + G) + G
+  const gridW = HW + cols * (C + G) + G
+  const gridH = HH + rows * (C + G) + G
 
   const canvas = document.createElement('canvas')
-  canvas.width = canvasW
-  canvas.height = canvasH
-
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
+  // ── Legend sizing ────────────────────────────────────────────────────
+  // The legend is measured first so the canvas can be widened when a single
+  // entry does not fit the grid width (e.g. a 12×12 guide with long colour
+  // names). Canvas width/height are set after measuring, because assigning
+  // them resets the 2D context state.
+  const legendEntries = collectLegendEntries(matrix)
+  const entryWidth = measureLegendEntryWidth(ctx, legendEntries)
+  const legend = legendLayout(legendEntries, entryWidth, gridW)
+
+  const canvasW = Math.max(gridW, legend.width)
+  canvas.width = canvasW
+  canvas.height = gridH + legend.height
+
   // ── White background ──────────────────────────────────────────────────
   ctx.fillStyle = '#FFFFFF'
-  ctx.fillRect(0, 0, canvasW, canvasH)
+  ctx.fillRect(0, 0, canvasW, canvas.height)
 
   // ── Grid lines (sand-300 colour) ──────────────────────────────────────
   ctx.strokeStyle = '#E8E0D0'
@@ -218,14 +368,14 @@ export function exportBuildGuide(
     const x = HW + col * (C + G) + G * 0.5
     ctx.beginPath()
     ctx.moveTo(x, HH)
-    ctx.lineTo(x, canvasH)
+    ctx.lineTo(x, gridH)
     ctx.stroke()
   }
   for (let row = 0; row <= rows; row++) {
     const y = HH + row * (C + G) + G * 0.5
     ctx.beginPath()
     ctx.moveTo(HW, y)
-    ctx.lineTo(canvasW, y)
+    ctx.lineTo(gridW, y)
     ctx.stroke()
   }
 
@@ -259,13 +409,12 @@ export function exportBuildGuide(
       ctx.fillStyle = color.hex
       ctx.fillRect(x, y, C, C)
 
-      // Abbreviation text — light or dark based on perceived luminance
-      const onDark = hexLuma(color.hex) <= 0.35
-      ctx.fillStyle = onDark ? 'rgba(255,255,255,0.90)' : 'rgba(0,0,0,0.75)'
+      // Canonical code — light or dark based on perceived luminance
+      ctx.fillStyle = labelColor(color.hex)
       ctx.font = `bold ${GUIDE_FONT}px monospace`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText(colorAbbrev(color), x + C / 2, y + C / 2)
+      ctx.fillText(getColorCode(color), x + C / 2, y + C / 2)
     }
   }
 
@@ -278,6 +427,11 @@ export function exportBuildGuide(
   ctx.textBaseline = 'middle'
   ctx.fillText('BKR', HW / 2, HH / 2)
 
-  // Use gridSize in the filename for clarity
-  triggerDownload(canvas, `brickr-guide-${gridSize}x${gridSize}.png`)
+  // ── Colour legend (below the grid, never overlapping it) ─────────────
+  drawLegend(ctx, legendEntries, entryWidth, legend.cols, gridH)
+
+  triggerDownload(
+    canvas,
+    `brickr-guide-${gridDimensions.width}x${gridDimensions.height}.png`
+  )
 }

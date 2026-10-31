@@ -2,24 +2,30 @@
 
 import { useMemo } from 'react'
 import { cn } from '@/lib/cn'
-import type { GridSize, LegoColor, PieceCount, RenderMode } from '@/types'
+import { estimateBuildMinutes } from '@/lib/buildEstimate'
+import type { GridDimensions, LegoColor, PieceCount, RenderMode } from '@/types'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
 import { ColorBreakdown } from './ColorBreakdown'
 import { Kbd } from '@/components/ui/kbd'
 
 export interface StatsPanelProps {
+  /**
+   * Per-colour counts for the CURRENT committed matrix, derived via
+   * `computePieceCounts(matrix)` in `app/page.tsx`. Empty cells never appear
+   * here, so totals and build time only ever describe physical bricks.
+   */
   pieceCounts: PieceCount[]
   isBuilding: boolean
   buildProgress: number // 0–1
   /** Current pixel matrix — needed for export. Pass null when no image is loaded. */
   matrix: (LegoColor | null)[][] | null
-  gridSize: GridSize
+  gridDimensions: GridDimensions
   renderMode: RenderMode
   /**
-   * On mobile (< lg) the panel is hidden by default.
-   * Set to true to make it visible as a bottom sheet on small screens.
+   * True while a newer conversion is pending. Export is blocked so the user
+   * can't download a result that no longer matches the requested settings.
    */
-  mobileVisible?: boolean
+  isProcessing?: boolean
 }
 
 export function StatsPanel({
@@ -27,16 +33,16 @@ export function StatsPanel({
   isBuilding,
   buildProgress,
   matrix,
-  gridSize,
+  gridDimensions,
   renderMode,
-  mobileVisible = false,
+  isProcessing = false,
 }: StatsPanelProps) {
   const totalPieces = useMemo(
     () => pieceCounts.reduce((sum, pc) => sum + pc.count, 0),
     [pieceCounts]
   )
 
-  const buildTimeMin = Math.round((totalPieces * 15) / 60)
+  const buildTimeMin = estimateBuildMinutes(totalPieces)
   const canExport = matrix !== null && matrix.length > 0
 
   const funMessage = useMemo(() => {
@@ -53,19 +59,9 @@ export function StatsPanel({
     <div
       data-testid="stats-panel"
       className={cn(
-        // Shared
         'bg-sand-100/90 backdrop-blur-md',
         'border border-sand-300',
-        'z-20 p-5 shadow-floating',
-        'duration-base transition-all',
-        'fixed right-0 bottom-0 left-0',
-        'max-h-[70vh] overflow-y-auto rounded-t-xl',
-        mobileVisible ? 'translate-y-0' : 'translate-y-full',
-        'lg:translate-y-0', // always un-translated on desktop
-        'lg:right-4 lg:bottom-auto lg:left-auto',
-        'lg:top-1/2 lg:-translate-y-1/2',
-        'lg:w-56 lg:rounded-xl',
-        'lg:max-h-[calc(100vh-2rem)]'
+        'p-5 shadow-floating'
       )}
     >
       <p className="font-mono text-[10px] tracking-widest text-sand-400 uppercase">
@@ -142,12 +138,14 @@ export function StatsPanel({
               type="button"
               data-testid="export-image-button"
               onClick={() => exportAsImage(matrix, renderMode, 16)}
+              disabled={isProcessing}
               className={cn(
                 'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',
                 'font-display text-xs font-extrabold text-sand-700',
                 'border-sand-300 bg-sand-200',
+                'duration-micro transition-all',
                 'hover:bg-sand-300 active:scale-[0.97]',
-                'duration-micro transition-all'
+                'disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100'
               )}
             >
               <span>↓ Download art</span>
@@ -159,13 +157,15 @@ export function StatsPanel({
             <button
               type="button"
               data-testid="export-guide-button"
-              onClick={() => exportBuildGuide(matrix, gridSize)}
+              onClick={() => exportBuildGuide(matrix, gridDimensions)}
+              disabled={isProcessing}
               className={cn(
                 'flex w-full items-center justify-between rounded-md border-[1.5px] px-3 py-2',
                 'font-display text-xs font-extrabold text-sand-700',
                 'border-sand-300 bg-sand-200',
+                'duration-micro transition-all',
                 'hover:bg-sand-300 active:scale-[0.97]',
-                'duration-micro transition-all'
+                'disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100'
               )}
             >
               <span>↓ Download guide</span>

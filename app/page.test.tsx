@@ -1,8 +1,10 @@
 import { useBrickCanvas } from '@/hooks/useBrickCanvas'
 import { useImageProcessor } from '@/hooks/useImageProcessor'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useSound } from '@/hooks/useSound'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
 import { fetchImageAsFile } from '@/lib/imageLoader'
+import type { LegoColor, PieceCount } from '@/types'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import Page from './page'
@@ -10,8 +12,55 @@ import Page from './page'
 vi.mock(import('@/hooks/useBrickCanvas'))
 vi.mock(import('@/hooks/useImageProcessor'))
 vi.mock(import('@/hooks/useSound'))
+vi.mock(import('@/hooks/useIsMobile'))
 vi.mock(import('@/lib/imageLoader'))
 vi.mock(import('@/lib/exportCanvas'))
+
+vi.mock('vaul', () => {
+  const Root = ({
+    children,
+    open,
+  }: {
+    children: React.ReactNode
+    open?: boolean
+  }) => (open !== false ? <>{children}</> : null)
+  const Trigger = ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  )
+  const Portal = ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  )
+  const Overlay = () => null
+  const Content = ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode
+    className?: string
+  }) => (
+    <div data-testid="mock-drawer-content" className={className}>
+      {children}
+    </div>
+  )
+  const Close = ({ children }: { children: React.ReactNode }) => <>{children}</>
+  const Title = ({ children }: { children: React.ReactNode }) => <>{children}</>
+  const Description = ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  )
+
+  return {
+    Drawer: {
+      Root,
+      Trigger,
+      Portal,
+      Overlay,
+      Content,
+      Close,
+      Title,
+      Description,
+    },
+  }
+})
 
 vi.mock('@tsparticles/react', () => ({
   default: () => <div data-testid="mock-particles" />,
@@ -32,7 +81,7 @@ describe('Page component', () => {
     mockCanvas = {
       state: {
         pixelMatrix: [],
-        gridSize: 32,
+        gridDimensions: { width: 32, height: 32 },
         messiness: 0,
         renderMode: 'stud',
         showGrid: false,
@@ -41,7 +90,7 @@ describe('Page component', () => {
       },
       buildKey: 0,
       loadImage: vi.fn(),
-      setGridSize: vi.fn(),
+      setGridDimensions: vi.fn(),
       setMessiness: vi.fn(),
       setRenderMode: vi.fn(),
       toggleGrid: vi.fn(),
@@ -69,6 +118,7 @@ describe('Page component', () => {
     vi.mocked(useBrickCanvas).mockReturnValue(mockCanvas)
     vi.mocked(useImageProcessor).mockReturnValue(mockProcessor)
     vi.mocked(useSound).mockReturnValue(mockSound)
+    vi.mocked(useIsMobile).mockReturnValue(false)
   })
 
   test('renders the initial state with DropZone', () => {
@@ -100,7 +150,12 @@ describe('Page component', () => {
       fireEvent.change(input, { target: { files: [file] } })
     })
 
-    expect(mockProcessor.process).toHaveBeenCalledWith(expect.any(File), 32, 0)
+    expect(mockProcessor.process).toHaveBeenCalledWith(
+      expect.any(File),
+      32,
+      32,
+      0
+    )
     expect(global.URL.createObjectURL).toHaveBeenCalled()
   })
 
@@ -123,7 +178,7 @@ describe('Page component', () => {
     expect(fetchImageAsFile).toHaveBeenCalledWith(
       'https://example.com/image.png'
     )
-    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 0)
+    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 32, 0)
     expect(input).toHaveValue('')
   })
 
@@ -152,13 +207,21 @@ describe('Page component', () => {
       fireEvent.change(input, { target: { files: [file] } })
     })
 
-    const size64Btn = screen.getByRole('button', { name: '64×64' })
+    const size64Btn = screen.getAllByRole('button', { name: '64x64' })[0]
     fireEvent.click(size64Btn)
 
-    expect(mockCanvas.setGridSize).toHaveBeenCalledWith(64)
-    expect(mockProcessor.process).toHaveBeenCalledWith(expect.any(File), 64, 0)
+    expect(mockCanvas.setGridDimensions).toHaveBeenCalledWith({
+      width: 64,
+      height: 64,
+    })
+    expect(mockProcessor.process).toHaveBeenCalledWith(
+      expect.any(File),
+      64,
+      64,
+      0
+    )
 
-    mockCanvas.state.gridSize = 64
+    mockCanvas.state.gridDimensions = { width: 64, height: 64 }
     rerender(<Page />)
   })
 
@@ -179,6 +242,28 @@ describe('Page component', () => {
     expect(exportAsImage).toHaveBeenCalled()
 
     fireEvent.keyDown(window, { code: 'KeyD' })
+    expect(exportBuildGuide).toHaveBeenCalled()
+  })
+
+  test('does not export while a conversion is pending', () => {
+    mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
+    mockProcessor.isProcessing = true
+    const { rerender } = render(<Page />)
+
+    fireEvent.keyDown(window, { code: 'KeyE' })
+    fireEvent.keyDown(window, { code: 'KeyD' })
+
+    expect(exportAsImage).not.toHaveBeenCalled()
+    expect(exportBuildGuide).not.toHaveBeenCalled()
+
+    // Once processing finishes, the shortcuts export again
+    mockProcessor.isProcessing = false
+    rerender(<Page />)
+
+    fireEvent.keyDown(window, { code: 'KeyE' })
+    fireEvent.keyDown(window, { code: 'KeyD' })
+
+    expect(exportAsImage).toHaveBeenCalled()
     expect(exportBuildGuide).toHaveBeenCalled()
   })
 
@@ -253,20 +338,17 @@ describe('Page component', () => {
     expect(fetchImageAsFile).toHaveBeenCalledWith(
       'https://example.com/pasted.jpg'
     )
-    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 0)
+    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 32, 0)
   })
 
   test('toggles mobile stats panel', async () => {
     mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
     render(<Page />)
 
-    const toggleBtn = screen.getByRole('button', { name: /Stats/i })
+    const toggleBtn = screen.getByRole('button', { name: 'Stats' })
     fireEvent.click(toggleBtn)
 
-    expect(screen.getByText('✕ Stats')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByText('✕ Stats'))
-    expect(screen.getByText(/Stats/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Stats' })).toBeInTheDocument()
   })
 
   test('handleCellClick plays sound and updates canvas', () => {
@@ -284,11 +366,11 @@ describe('Page component', () => {
     mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
     const { rerender } = render(<Page />)
 
-    expect(screen.getByText(/Grid size/i)).toBeInTheDocument()
-    expect(screen.getByText(/Colour breakdown/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Grid size/i)[0]).toBeInTheDocument()
+    expect(screen.getAllByText(/Colour breakdown/i)[0]).toBeInTheDocument()
 
     // 2. Click Reset
-    const resetBtn = screen.getByRole('button', { name: /Reset/i })
+    const resetBtn = screen.getAllByRole('button', { name: /Reset/i })[0]
     fireEvent.click(resetBtn)
 
     expect(mockCanvas.reset).toHaveBeenCalled()
@@ -297,11 +379,11 @@ describe('Page component', () => {
     rerender(<Page />)
 
     expect(screen.getByTestId('drop-zone')).toBeInTheDocument()
-    expect(screen.getByTestId('control-panel')).toBeInTheDocument()
-    expect(screen.getByTestId('stats-panel')).toBeInTheDocument()
+    expect(screen.getAllByTestId('control-panel')[0]).toBeInTheDocument()
+    expect(screen.getAllByTestId('stats-panel')[0]).toBeInTheDocument()
 
     // stats panel
-    expect(screen.getByTestId('total-pieces')).toHaveTextContent('—')
+    expect(screen.getAllByTestId('total-pieces')[0]).toHaveTextContent('—')
     expect(screen.queryByTestId('build-time')).not.toBeInTheDocument()
     expect(screen.queryByTestId('fun-message')).not.toBeInTheDocument()
     expect(screen.queryByTestId('build-status')).not.toBeInTheDocument()
@@ -309,5 +391,100 @@ describe('Page component', () => {
     expect(
       screen.getByTestId('color-breakdown-empty-state')
     ).toBeInTheDocument()
+  })
+
+  // ── Count consistency with the edited matrix (issue #1) ───────────────────
+
+  const red: LegoColor = {
+    id: 'red',
+    name: 'Bright Red',
+    hex: '#FF0000',
+    lab: [0, 0, 0],
+  }
+  const blue: LegoColor = {
+    id: 'blue',
+    name: 'Bright Blue',
+    hex: '#0000FF',
+    lab: [0, 0, 0],
+  }
+
+  test('derives piece counts from the edited matrix, not the processor', () => {
+    const initial: (LegoColor | null)[][] = [
+      [red, red, red, red],
+      [red, red, red, red],
+    ]
+    mockCanvas.state.pixelMatrix = initial
+    // Stale processor result — must be ignored in favour of the matrix
+    const staleCounts: PieceCount[] = [
+      { color: red, count: 99, percentage: 100 },
+    ]
+    mockProcessor.pieceCounts = staleCounts
+
+    const { rerender } = render(<Page />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('8')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('8')
+    // 8 * 15s / 60s = 2 minutes
+    expect(screen.getByTestId('build-time')).toHaveTextContent(
+      '≈ 2 min to build'
+    )
+
+    // Removing one brick updates the total and that colour's count
+    const edited: (LegoColor | null)[][] = [
+      [red, red, red, red],
+      [null, red, red, red],
+    ]
+    mockCanvas.state.pixelMatrix = edited
+    rerender(<Page />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('7')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('7')
+
+    // Restoring it restores both counts
+    mockCanvas.state.pixelMatrix = initial
+    rerender(<Page />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('8')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('8')
+  })
+
+  test('control panel shows grid capacity before generation and actual pieces after', () => {
+    const { rerender } = render(<Page />)
+
+    // No image yet → 32 × 32 capacity estimate
+    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent(
+      '~1,024 pieces'
+    )
+
+    // Regenerated pattern with three physical bricks
+    mockCanvas.state.pixelMatrix = [[red, red, blue, null]]
+    rerender(<Page />)
+
+    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent('3 pieces')
+    expect(screen.getByTestId('pieces-estimate')).not.toHaveTextContent('~')
+    // 3 * 15s / 60s = 0.75 → 1 minute
+    expect(screen.getByTestId('minutes-estimate')).toHaveTextContent('≈ 1 min')
+  })
+
+  test('exports and stats share the same committed matrix', () => {
+    const matrix: (LegoColor | null)[][] = [
+      [red, null],
+      [null, blue],
+    ]
+    mockCanvas.state.pixelMatrix = matrix
+
+    render(<Page />)
+
+    // Two physical bricks even though the grid has four cells
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('2')
+
+    fireEvent.click(screen.getByTestId('export-image-button'))
+    expect(exportAsImage).toHaveBeenCalledWith(matrix, 'stud', 16)
+
+    fireEvent.click(screen.getByTestId('export-guide-button'))
+    expect(exportBuildGuide).toHaveBeenCalledWith(matrix, {
+      width: 32,
+      height: 32,
+    })
   })
 })

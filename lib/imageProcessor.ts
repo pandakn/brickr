@@ -11,7 +11,7 @@
  *  computePieceCounts() LegoColor[][] → PieceCount[]  (stats)
  */
 
-import type { GridSize, LegoColor, PieceCount } from '@/types'
+import type { GridDimension, LegoColor, PieceCount } from '@/types'
 import { LEGO_PALETTE } from './legoColors'
 import { nearestLegoColor } from './colorMapping'
 
@@ -51,37 +51,37 @@ function deriveMatrixSeed(matrix: LegoColor[][]): number {
 // ─── Public API ───────────────────────────────────────────────────────────
 
 /**
- * Resize `file` to a `gridSize × gridSize` square using the browser's Canvas
- * API and return the raw `ImageData`.
+ * Resize `file` to a `width × height` grid using the browser's Canvas API
+ * and return the raw `ImageData`.
  *
- * The image is stretched to fill the square (no letterboxing).  For photos
- * this produces a slight distortion, but for the pixelated LEGO look the
- * square crop gives the most predictable stud grid.
+ * The image is stretched to fill (no letterboxing), giving the user full
+ * control over the output aspect ratio.
  *
  * Transparent pixels are alpha-composited against white so the colour-mapping
  * step always receives fully-opaque RGB values.
  */
 export async function resizeImage(
   file: File,
-  gridSize: GridSize
+  width: GridDimension,
+  height: GridDimension
 ): Promise<ImageData> {
   const bitmap = await createImageBitmap(file)
 
   const canvas = document.createElement('canvas')
-  canvas.width = gridSize
-  canvas.height = gridSize
+  canvas.width = width
+  canvas.height = height
 
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Could not acquire a 2D canvas context')
 
   // White background so transparent areas map to White rather than Black
   ctx.fillStyle = '#FFFFFF'
-  ctx.fillRect(0, 0, gridSize, gridSize)
+  ctx.fillRect(0, 0, width, height)
 
-  ctx.drawImage(bitmap, 0, 0, gridSize, gridSize)
+  ctx.drawImage(bitmap, 0, 0, width, height)
   bitmap.close()
 
-  return ctx.getImageData(0, 0, gridSize, gridSize)
+  return ctx.getImageData(0, 0, width, height)
 }
 
 /**

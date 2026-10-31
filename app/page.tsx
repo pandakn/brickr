@@ -25,18 +25,21 @@ import { BeforeAfterSlider } from '@/components/canvas/BeforeAfterSlider'
 import { BrickCanvas } from '@/components/canvas/BrickCanvas'
 import { ControlPanel } from '@/components/controls/ControlPanel'
 import { StatsPanel } from '@/components/stats/StatsPanel'
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer'
 import { Kbd } from '@/components/ui/kbd'
 import { SparklesCore } from '@/components/ui/sparkles'
 import { DropZone } from '@/components/upload/DropZone'
 import { useBrickCanvas } from '@/hooks/useBrickCanvas'
 import { useImageProcessor } from '@/hooks/useImageProcessor'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useSound } from '@/hooks/useSound'
 import { cn } from '@/lib/cn'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
 import { fetchImageAsFile } from '@/lib/imageLoader'
-import type { GridSize } from '@/types'
+import { computePieceCounts } from '@/lib/imageProcessor'
+import type { GridDimensions } from '@/types'
 import { ToyBrick } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
 
@@ -44,17 +47,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * Gray pulsing stud grid shown while the image processor runs.
  * Gives the user visual feedback that something is happening.
  */
-function LoadingGrid({ gridSize }: { gridSize: GridSize }) {
-  const count = gridSize * gridSize
+function LoadingGrid({ gridDimensions }: { gridDimensions: GridDimensions }) {
+  const count = gridDimensions.width * gridDimensions.height
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div
         className="animate-pulse"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+          gridTemplateColumns: `repeat(${gridDimensions.width}, 1fr)`,
           gap: '1px',
-          aspectRatio: '1 / 1',
           width: '100%',
           maxWidth: '100%',
         }}
@@ -73,6 +75,7 @@ export default function Page() {
   const canvas = useBrickCanvas()
   const processor = useImageProcessor()
   const sound = useSound()
+  const isMobile = useIsMobile()
 
   /** The last file the user uploaded — kept so we can reprocess on settings change. */
   const sourceFileRef = useRef<File | null>(null)
@@ -96,6 +99,18 @@ export default function Page() {
 
   const hasImage = canvas.state.pixelMatrix.length > 0
 
+  // ── Derived piece counts ─────────────────────────────────────────────────
+  // Always derived from the committed editable matrix, never from the
+  // processor output (which goes stale as soon as a cell is toggled).
+  // Empty cells are excluded by computePieceCounts, so every consumer below —
+  // stats, colour breakdown, control-panel totals, build time and exports —
+  // describes exactly the same pattern.
+  const pieceCounts = useMemo(
+    () => computePieceCounts(canvas.state.pixelMatrix),
+    [canvas.state.pixelMatrix]
+  )
+  const totalPieces = pieceCounts.reduce((sum, count) => sum + count.count, 0)
+
   // ── Sync processor output → canvas state ─────────────────────────────────
   // Called every time the processor finishes a new matrix (initial load,
   // or reprocess after gridSize / messiness change).
@@ -110,12 +125,13 @@ export default function Page() {
   // ── Settings change + reset handlers ──────────────────────────────────────
   // Defined BEFORE the keyboard-shortcut block so kbRef can reference handleReset.
 
-  const handleGridSizeChange = (size: GridSize) => {
-    canvas.setGridSize(size)
+  const handleGridDimensionsChange = (dims: GridDimensions) => {
+    canvas.setGridDimensions(dims)
     if (sourceFileRef.current) {
       void processor.process(
         sourceFileRef.current,
-        size,
+        dims.width,
+        dims.height,
         canvas.state.messiness
       )
     }
@@ -124,9 +140,11 @@ export default function Page() {
   const handleMessinessChange = (value: number) => {
     canvas.setMessiness(value)
     if (sourceFileRef.current) {
+      const dims = canvas.state.gridDimensions
       void processor.process(
         sourceFileRef.current,
-        canvas.state.gridSize,
+        dims.width,
+        dims.height,
         value
       )
     }
@@ -160,7 +178,8 @@ export default function Page() {
     pixelMatrix: canvas.state.pixelMatrix,
     renderMode: canvas.state.renderMode,
     hasOriginalSrc: false,
-    gridSize: 32 as GridSize,
+    isProcessing: false,
+    gridDimensions: { width: 32, height: 32 } as GridDimensions,
   })
 
   // Runs after every render — safe to write to ref here (not during render)
@@ -174,7 +193,8 @@ export default function Page() {
       pixelMatrix: canvas.state.pixelMatrix,
       renderMode: canvas.state.renderMode,
       hasOriginalSrc: !!originalSrc,
-      gridSize: canvas.state.gridSize,
+      isProcessing: processor.isProcessing,
+      gridDimensions: canvas.state.gridDimensions,
     }
   })
 
@@ -210,7 +230,7 @@ export default function Page() {
           kb.handleReset()
           break
         case 'KeyE':
-          if (kb.hasImage) {
+          if (kb.hasImage && !kb.isProcessing) {
             e.preventDefault()
             exportAsImage(kb.pixelMatrix, kb.renderMode, 16)
           }
@@ -222,9 +242,9 @@ export default function Page() {
           }
           break
         case 'KeyD':
-          if (kb.hasImage) {
+          if (kb.hasImage && !kb.isProcessing) {
             e.preventDefault()
-            exportBuildGuide(kb.pixelMatrix, kb.gridSize)
+            exportBuildGuide(kb.pixelMatrix, kb.gridDimensions)
           }
           break
       }
@@ -241,14 +261,16 @@ export default function Page() {
         if (prev) URL.revokeObjectURL(prev)
         return URL.createObjectURL(file)
       })
+      const dims = canvas.state.gridDimensions
       void processor.process(
         file,
-        canvas.state.gridSize,
+        dims.width,
+        dims.height,
         canvas.state.messiness
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [processor.process, canvas.state.gridSize, canvas.state.messiness]
+    [processor.process, canvas.state.gridDimensions, canvas.state.messiness]
   )
 
   // ── Global paste listener — detect image URLs ─────────────────────────────
@@ -379,33 +401,85 @@ export default function Page() {
 
       {/* ── Main area ───────────────────────────────────────────────────── */}
       <main className="relative min-h-0 flex-1">
-        {/* Floating panels (position: fixed — don't affect flow) */}
-        <ControlPanel
-          gridSize={canvas.state.gridSize}
-          messiness={canvas.state.messiness}
-          renderMode={canvas.state.renderMode}
-          showGrid={canvas.state.showGrid}
-          isBuilding={canvas.state.isBuilding}
-          soundEnabled={sound.soundEnabled}
-          hasImage={hasImage}
-          onGridSizeChange={handleGridSizeChange}
-          onMessinessChange={handleMessinessChange}
-          onRenderModeChange={canvas.setRenderMode}
-          onGridToggle={canvas.toggleGrid}
-          onSoundToggle={sound.toggleSound}
-          onBuild={canvas.startBuild}
-          onReset={handleReset}
-        />
+        {isMobile ? (
+          <>
+            {/* ControlPanel — mobile: Drawer bottom sheet */}
+            <Drawer defaultOpen dismissible>
+              <DrawerContent className="max-h-[60vh]">
+                <DrawerTitle className="sr-only">Controls</DrawerTitle>
+                <ControlPanel
+                  gridDimensions={canvas.state.gridDimensions}
+                  messiness={canvas.state.messiness}
+                  renderMode={canvas.state.renderMode}
+                  showGrid={canvas.state.showGrid}
+                  isBuilding={canvas.state.isBuilding}
+                  soundEnabled={sound.soundEnabled}
+                  hasImage={hasImage}
+                  totalPieces={totalPieces}
+                  onGridDimensionsChange={handleGridDimensionsChange}
+                  onMessinessChange={handleMessinessChange}
+                  onRenderModeChange={canvas.setRenderMode}
+                  onGridToggle={canvas.toggleGrid}
+                  onSoundToggle={sound.toggleSound}
+                  onBuild={canvas.startBuild}
+                  onReset={handleReset}
+                />
+              </DrawerContent>
+            </Drawer>
 
-        <StatsPanel
-          pieceCounts={processor.pieceCounts}
-          isBuilding={canvas.state.isBuilding}
-          buildProgress={canvas.state.buildProgress}
-          matrix={hasImage ? canvas.state.pixelMatrix : null}
-          gridSize={canvas.state.gridSize}
-          renderMode={canvas.state.renderMode}
-          mobileVisible={showMobileStats}
-        />
+            {/* StatsPanel — mobile: Drawer bottom sheet */}
+            <Drawer open={showMobileStats} onOpenChange={setShowMobileStats}>
+              <DrawerContent className="max-h-[70vh]">
+                <DrawerTitle className="sr-only">Stats</DrawerTitle>
+                <StatsPanel
+                  pieceCounts={pieceCounts}
+                  isBuilding={canvas.state.isBuilding}
+                  buildProgress={canvas.state.buildProgress}
+                  matrix={hasImage ? canvas.state.pixelMatrix : null}
+                  gridDimensions={canvas.state.gridDimensions}
+                  renderMode={canvas.state.renderMode}
+                  isProcessing={processor.isProcessing}
+                />
+              </DrawerContent>
+            </Drawer>
+          </>
+        ) : (
+          <>
+            {/* ControlPanel — desktop: fixed sidebar */}
+            <div className="fixed top-1/2 left-4 z-20 w-64 -translate-y-1/2 rounded-xl">
+              <ControlPanel
+                gridDimensions={canvas.state.gridDimensions}
+                messiness={canvas.state.messiness}
+                renderMode={canvas.state.renderMode}
+                showGrid={canvas.state.showGrid}
+                isBuilding={canvas.state.isBuilding}
+                soundEnabled={sound.soundEnabled}
+                hasImage={hasImage}
+                totalPieces={totalPieces}
+                onGridDimensionsChange={handleGridDimensionsChange}
+                onMessinessChange={handleMessinessChange}
+                onRenderModeChange={canvas.setRenderMode}
+                onGridToggle={canvas.toggleGrid}
+                onSoundToggle={sound.toggleSound}
+                onBuild={canvas.startBuild}
+                onReset={handleReset}
+              />
+            </div>
+
+            {/* StatsPanel — desktop: fixed sidebar */}
+            <div className="fixed top-1/2 right-4 z-20 w-56 -translate-y-1/2">
+              <StatsPanel
+                pieceCounts={pieceCounts}
+                isBuilding={canvas.state.isBuilding}
+                buildProgress={canvas.state.buildProgress}
+                matrix={hasImage ? canvas.state.pixelMatrix : null}
+                gridDimensions={canvas.state.gridDimensions}
+                renderMode={canvas.state.renderMode}
+                isProcessing={processor.isProcessing}
+              />
+            </div>
+          </>
+        )}
 
         {/* Mobile stats toggle button — visible only on small screens */}
         {hasImage && (
@@ -422,7 +496,7 @@ export default function Page() {
                 : 'border border-sand-300 bg-sand-100/90 text-sand-700'
             )}
           >
-            {showMobileStats ? '✕ Stats' : '📊 Stats'}
+            Stats
           </button>
         )}
 
@@ -485,7 +559,7 @@ export default function Page() {
           {/* ── Processing: placeholder grid ─────────────────────────── */}
           {processor.isProcessing && (
             <div className="w-full max-w-xl">
-              <LoadingGrid gridSize={canvas.state.gridSize} />
+              <LoadingGrid gridDimensions={canvas.state.gridDimensions} />
             </div>
           )}
 
