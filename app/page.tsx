@@ -36,9 +36,10 @@ import { useSound } from '@/hooks/useSound'
 import { cn } from '@/lib/cn'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
 import { fetchImageAsFile } from '@/lib/imageLoader'
+import { computePieceCounts } from '@/lib/imageProcessor'
 import type { GridDimensions } from '@/types'
 import { ToyBrick } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 // ─── Loading placeholder ──────────────────────────────────────────────────
 
@@ -97,6 +98,18 @@ export default function Page() {
   const [urlError, setUrlError] = useState<string | null>(null)
 
   const hasImage = canvas.state.pixelMatrix.length > 0
+
+  // ── Derived piece counts ─────────────────────────────────────────────────
+  // Always derived from the committed editable matrix, never from the
+  // processor output (which goes stale as soon as a cell is toggled).
+  // Empty cells are excluded by computePieceCounts, so every consumer below —
+  // stats, colour breakdown, control-panel totals, build time and exports —
+  // describes exactly the same pattern.
+  const pieceCounts = useMemo(
+    () => computePieceCounts(canvas.state.pixelMatrix),
+    [canvas.state.pixelMatrix]
+  )
+  const totalPieces = pieceCounts.reduce((sum, count) => sum + count.count, 0)
 
   // ── Sync processor output → canvas state ─────────────────────────────────
   // Called every time the processor finishes a new matrix (initial load,
@@ -402,6 +415,7 @@ export default function Page() {
                   isBuilding={canvas.state.isBuilding}
                   soundEnabled={sound.soundEnabled}
                   hasImage={hasImage}
+                  totalPieces={totalPieces}
                   onGridDimensionsChange={handleGridDimensionsChange}
                   onMessinessChange={handleMessinessChange}
                   onRenderModeChange={canvas.setRenderMode}
@@ -418,7 +432,7 @@ export default function Page() {
               <DrawerContent className="max-h-[70vh]">
                 <DrawerTitle className="sr-only">Stats</DrawerTitle>
                 <StatsPanel
-                  pieceCounts={processor.pieceCounts}
+                  pieceCounts={pieceCounts}
                   isBuilding={canvas.state.isBuilding}
                   buildProgress={canvas.state.buildProgress}
                   matrix={hasImage ? canvas.state.pixelMatrix : null}
@@ -441,6 +455,7 @@ export default function Page() {
                 isBuilding={canvas.state.isBuilding}
                 soundEnabled={sound.soundEnabled}
                 hasImage={hasImage}
+                totalPieces={totalPieces}
                 onGridDimensionsChange={handleGridDimensionsChange}
                 onMessinessChange={handleMessinessChange}
                 onRenderModeChange={canvas.setRenderMode}
@@ -454,7 +469,7 @@ export default function Page() {
             {/* StatsPanel — desktop: fixed sidebar */}
             <div className="fixed top-1/2 right-4 z-20 w-56 -translate-y-1/2">
               <StatsPanel
-                pieceCounts={processor.pieceCounts}
+                pieceCounts={pieceCounts}
                 isBuilding={canvas.state.isBuilding}
                 buildProgress={canvas.state.buildProgress}
                 matrix={hasImage ? canvas.state.pixelMatrix : null}

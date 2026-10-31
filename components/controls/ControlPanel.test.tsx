@@ -11,6 +11,7 @@ describe('ControlPanel', () => {
     isBuilding: false,
     soundEnabled: true,
     hasImage: true,
+    totalPieces: 640,
     onGridDimensionsChange: vi.fn(),
     onMessinessChange: vi.fn(),
     onRenderModeChange: vi.fn(),
@@ -20,14 +21,40 @@ describe('ControlPanel', () => {
     onReset: vi.fn(),
   }
 
-  test('renders correctly with estimates', () => {
-    render(<ControlPanel {...defaultProps} />)
-    // 32 * 32 = 1024
+  test('shows the grid capacity estimate before an image exists', () => {
+    render(<ControlPanel {...defaultProps} hasImage={false} totalPieces={0} />)
+    // 32 * 32 = 1024 — capacity, not actual pieces
     expect(screen.getByTestId('pieces-estimate')).toHaveTextContent(
-      /1,024 pieces/i
+      '~1,024 pieces'
     )
+    // 1024 * 15s / 60s = 256 minutes
+    expect(screen.getByTestId('minutes-estimate')).toHaveTextContent('~256 min')
+  })
+
+  test('shows the actual required pieces after generation', () => {
+    render(<ControlPanel {...defaultProps} hasImage={true} totalPieces={640} />)
+    // 640 physical bricks, not the 1024-cell grid capacity
+    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent(
+      '640 pieces'
+    )
+    expect(screen.getByTestId('pieces-estimate')).not.toHaveTextContent('~')
+    // 640 * 15s / 60s = 160 minutes
     expect(screen.getByTestId('minutes-estimate')).toHaveTextContent(
-      /~256 min/i
+      '≈ 160 min'
+    )
+  })
+
+  test('actual pieces exclude empty cells from the count and build time', () => {
+    // 1024-cell grid with 24 cells removed → 1000 physical bricks
+    render(
+      <ControlPanel {...defaultProps} hasImage={true} totalPieces={1000} />
+    )
+    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent(
+      '1,000 pieces'
+    )
+    // 1000 * 15s / 60s = 250 minutes
+    expect(screen.getByTestId('minutes-estimate')).toHaveTextContent(
+      '≈ 250 min'
     )
   })
 
