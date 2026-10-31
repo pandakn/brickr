@@ -194,4 +194,51 @@ describe('StatsPanel', () => {
     expect(screen.queryByTestId('export-image-button')).not.toBeInTheDocument()
     expect(screen.queryByTestId('export-guide-button')).not.toBeInTheDocument()
   })
+
+  test('enables export buttons when not processing', () => {
+    render(
+      <StatsPanel
+        pieceCounts={mockPieceCounts}
+        isBuilding={false}
+        buildProgress={1}
+        matrix={[[null]]}
+        gridDimensions={{ width: 32, height: 32 }}
+        renderMode="stud"
+        isProcessing={false}
+      />
+    )
+    expect(screen.getByTestId('export-image-button')).toBeEnabled()
+    expect(screen.getByTestId('export-guide-button')).toBeEnabled()
+  })
+
+  test('disables export buttons while a conversion is pending', () => {
+    render(
+      <StatsPanel
+        pieceCounts={mockPieceCounts}
+        isBuilding={false}
+        buildProgress={1}
+        matrix={[[null]]}
+        gridDimensions={{ width: 32, height: 32 }}
+        renderMode="stud"
+        isProcessing={true}
+      />
+    )
+    expect(screen.getByTestId('export-image-button')).toBeDisabled()
+    expect(screen.getByTestId('export-guide-button')).toBeDisabled()
+  })
+
+  test('export buttons are enabled by default when isProcessing is omitted', () => {
+    render(
+      <StatsPanel
+        pieceCounts={mockPieceCounts}
+        isBuilding={false}
+        buildProgress={1}
+        matrix={[[null]]}
+        gridDimensions={{ width: 32, height: 32 }}
+        renderMode="stud"
+      />
+    )
+    expect(screen.getByTestId('export-image-button')).toBeEnabled()
+    expect(screen.getByTestId('export-guide-button')).toBeEnabled()
+  })
 })

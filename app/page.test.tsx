@@ -244,6 +244,28 @@ describe('Page component', () => {
     expect(exportBuildGuide).toHaveBeenCalled()
   })
 
+  test('does not export while a conversion is pending', () => {
+    mockCanvas.state.pixelMatrix = [[{ hex: '#000000', name: 'Black' }]]
+    mockProcessor.isProcessing = true
+    const { rerender } = render(<Page />)
+
+    fireEvent.keyDown(window, { code: 'KeyE' })
+    fireEvent.keyDown(window, { code: 'KeyD' })
+
+    expect(exportAsImage).not.toHaveBeenCalled()
+    expect(exportBuildGuide).not.toHaveBeenCalled()
+
+    // Once processing finishes, the shortcuts export again
+    mockProcessor.isProcessing = false
+    rerender(<Page />)
+
+    fireEvent.keyDown(window, { code: 'KeyE' })
+    fireEvent.keyDown(window, { code: 'KeyD' })
+
+    expect(exportAsImage).toHaveBeenCalled()
+    expect(exportBuildGuide).toHaveBeenCalled()
+  })
+
   test('toggles comparison view via button and keyboard', async () => {
     const { container, rerender } = render(<Page />)
 

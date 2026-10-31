@@ -165,6 +165,7 @@ export default function Page() {
     pixelMatrix: canvas.state.pixelMatrix,
     renderMode: canvas.state.renderMode,
     hasOriginalSrc: false,
+    isProcessing: false,
     gridDimensions: { width: 32, height: 32 } as GridDimensions,
   })
 
@@ -179,6 +180,7 @@ export default function Page() {
       pixelMatrix: canvas.state.pixelMatrix,
       renderMode: canvas.state.renderMode,
       hasOriginalSrc: !!originalSrc,
+      isProcessing: processor.isProcessing,
       gridDimensions: canvas.state.gridDimensions,
     }
   })
@@ -215,7 +217,7 @@ export default function Page() {
           kb.handleReset()
           break
         case 'KeyE':
-          if (kb.hasImage) {
+          if (kb.hasImage && !kb.isProcessing) {
             e.preventDefault()
             exportAsImage(kb.pixelMatrix, kb.renderMode, 16)
           }
@@ -227,7 +229,7 @@ export default function Page() {
           }
           break
         case 'KeyD':
-          if (kb.hasImage) {
+          if (kb.hasImage && !kb.isProcessing) {
             e.preventDefault()
             exportBuildGuide(kb.pixelMatrix, kb.gridDimensions)
           }
@@ -422,6 +424,7 @@ export default function Page() {
                   matrix={hasImage ? canvas.state.pixelMatrix : null}
                   gridDimensions={canvas.state.gridDimensions}
                   renderMode={canvas.state.renderMode}
+                  isProcessing={processor.isProcessing}
                 />
               </DrawerContent>
             </Drawer>
@@ -457,6 +460,7 @@ export default function Page() {
                 matrix={hasImage ? canvas.state.pixelMatrix : null}
                 gridDimensions={canvas.state.gridDimensions}
                 renderMode={canvas.state.renderMode}
+                isProcessing={processor.isProcessing}
               />
             </div>
           </>
