@@ -6,6 +6,10 @@ import { useImageProcessor } from './useImageProcessor'
 
 // Mock the image processor library
 vi.mock('@/lib/imageProcessor', () => ({
+  defaultConversionSettings: () => ({
+    profile: 'photo',
+    framing: { fit: 'contain', zoom: 1, positionX: 0.5, positionY: 0.5 },
+  }),
   resizeImage: vi.fn(),
   buildPixelMatrix: vi.fn(),
   computePieceCounts: vi.fn(),
@@ -156,7 +160,11 @@ describe('useImageProcessor', () => {
     expect(result.current.pieceCounts[0].color).toBe(blue)
 
     // The committed result was quantised with the newer request's settings
-    expect(processor.buildPixelMatrix).toHaveBeenCalledWith(image64, 80)
+    expect(processor.buildPixelMatrix).toHaveBeenCalledWith(
+      image64,
+      80,
+      expect.objectContaining({ profile: 'photo' })
+    )
     expect(processor.buildPixelMatrix).toHaveBeenCalledTimes(1)
 
     // Stale request resolves late — nothing may change
@@ -175,7 +183,11 @@ describe('useImageProcessor', () => {
 
     // The stale run never even reached the quantisation step
     expect(processor.buildPixelMatrix).toHaveBeenCalledTimes(1)
-    expect(processor.buildPixelMatrix).not.toHaveBeenCalledWith(image32, 10)
+    expect(processor.buildPixelMatrix).not.toHaveBeenCalledWith(
+      image32,
+      10,
+      expect.anything()
+    )
   })
 
   test('ignores a stale failure that rejects after a newer success', async () => {

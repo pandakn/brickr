@@ -17,8 +17,14 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import type { GridDimension, LegoColor, PieceCount } from '@/types'
+import type {
+  ConversionSettings,
+  GridDimension,
+  LegoColor,
+  PieceCount,
+} from '@/types'
 import {
+  defaultConversionSettings,
   resizeImage,
   buildPixelMatrix,
   computePieceCounts,
@@ -56,7 +62,8 @@ export type UseImageProcessorReturn = {
     file: File,
     width: GridDimension,
     height: GridDimension,
-    messiness: number
+    messiness: number,
+    settings?: ConversionSettings
   ) => Promise<void>
 }
 
@@ -98,7 +105,8 @@ export function useImageProcessor(): UseImageProcessorReturn {
       file: File,
       width: GridDimension,
       height: GridDimension,
-      messiness: number
+      messiness: number,
+      settings: ConversionSettings = defaultConversionSettings()
     ): Promise<void> => {
       const requestId = ++requestIdRef.current
       const isCurrent = () => requestIdRef.current === requestId
@@ -108,13 +116,13 @@ export function useImageProcessor(): UseImageProcessorReturn {
 
       try {
         // Step 1 — Resize to the target grid resolution
-        const newImageData = await resizeImage(file, width, height)
+        const newImageData = await resizeImage(file, width, height, settings)
 
         // A newer request (or a reset) superseded this one while we awaited
         if (!isCurrent()) return
 
         // Step 2 — Quantise pixels to the LEGO palette + apply messiness
-        const newMatrix = buildPixelMatrix(newImageData, messiness)
+        const newMatrix = buildPixelMatrix(newImageData, messiness, settings)
 
         // Step 3 — Compute per-colour piece counts
         const counts = computePieceCounts(newMatrix)

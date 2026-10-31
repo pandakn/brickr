@@ -3,13 +3,66 @@ import { describe, expect, test } from 'vitest'
 import {
   applyMessiness,
   buildPixelMatrix,
+  calculateImagePlacement,
   computePieceCounts,
+  defaultConversionSettings,
 } from './imageProcessor'
 import { LEGO_PALETTE } from './legoColors'
 
 describe('imageProcessor', () => {
   const red = LEGO_PALETTE.find((c) => c.name === 'Bright Red')!
   const blue = LEGO_PALETTE.find((c) => c.name === 'Bright Blue')!
+
+  describe('calculateImagePlacement', () => {
+    test('contains a portrait image without stretching it', () => {
+      const settings = defaultConversionSettings().framing
+      const placement = calculateImagePlacement({
+        sourceWidth: 20,
+        sourceHeight: 40,
+        targetWidth: 32,
+        targetHeight: 32,
+        settings,
+      })
+
+      expect(placement).toEqual({ left: 8, top: 0, width: 16, height: 32 })
+    })
+
+    test('covers a portrait image and adjusts crop position', () => {
+      const placement = calculateImagePlacement({
+        sourceWidth: 20,
+        sourceHeight: 40,
+        targetWidth: 32,
+        targetHeight: 32,
+        settings: {
+          fit: 'cover',
+          zoom: 1,
+          positionX: 0.5,
+          positionY: 1,
+        },
+      })
+
+      expect(placement).toEqual({ left: 0, top: -32, width: 32, height: 64 })
+    })
+
+    test('zooms while preserving the source aspect ratio', () => {
+      const placement = calculateImagePlacement({
+        sourceWidth: 40,
+        sourceHeight: 20,
+        targetWidth: 32,
+        targetHeight: 32,
+        settings: {
+          fit: 'contain',
+          zoom: 2,
+          positionX: 0.5,
+          positionY: 0.5,
+        },
+      })
+
+      expect(placement.width / placement.height).toBe(2)
+      expect(placement.left).toBe(-16)
+      expect(placement.top).toBe(0)
+    })
+  })
 
   describe('computePieceCounts', () => {
     test('returns empty array for empty matrix', () => {
@@ -111,6 +164,27 @@ describe('imageProcessor', () => {
 
       // Should map to White because it's composited against white
       expect(matrix[0][0].name).toBe('White')
+    })
+
+    test('avatar profile limits colours deterministically without mutating input pixels', () => {
+      const data = new Uint8ClampedArray([
+        255, 0, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255, 0, 255, 0, 255,
+      ])
+      const imageData = new ImageData(data, 4, 1)
+      const settings = {
+        profile: 'avatar' as const,
+        maxColors: 2,
+        framing: defaultConversionSettings().framing,
+      }
+
+      const first = buildPixelMatrix(imageData, 0, settings)
+      const second = buildPixelMatrix(imageData, 0, settings)
+
+      expect(first).toEqual(second)
+      expect(
+        new Set(first[0].map((color) => color.id)).size
+      ).toBeLessThanOrEqual(2)
+      expect([...imageData.data]).toEqual([...data])
     })
   })
 })

@@ -1,11 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
 import { ControlPanel } from './ControlPanel'
+import { defaultConversionSettings } from '@/lib/imageProcessor'
 
 describe('ControlPanel', () => {
   const defaultProps = {
     gridDimensions: { width: 32 as const, height: 32 as const },
     messiness: 0,
+    conversionSettings: defaultConversionSettings(),
     renderMode: 'stud' as const,
     showGrid: false,
     isBuilding: false,
@@ -14,6 +16,7 @@ describe('ControlPanel', () => {
     totalPieces: 640,
     onGridDimensionsChange: vi.fn(),
     onMessinessChange: vi.fn(),
+    onConversionSettingsChange: vi.fn(),
     onRenderModeChange: vi.fn(),
     onGridToggle: vi.fn(),
     onSoundToggle: vi.fn(),
