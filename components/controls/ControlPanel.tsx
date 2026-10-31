@@ -7,10 +7,13 @@ import type { GridDimensions, RenderMode } from '@/types'
 import { GridDimensionsPicker } from './GridDimensionsPicker'
 import { MessinessSlider } from './MessinessSlider'
 import { Kbd } from '@/components/ui/kbd'
+import { ConversionControls } from './ConversionControls'
+import type { ConversionSettings } from '@/types'
 
 export interface ControlPanelProps {
   gridDimensions: GridDimensions
   messiness: number
+  conversionSettings: ConversionSettings
   renderMode: RenderMode
   showGrid: boolean
   isBuilding: boolean
@@ -25,6 +28,7 @@ export interface ControlPanelProps {
   totalPieces: number
   onGridDimensionsChange: (dims: GridDimensions) => void
   onMessinessChange: (v: number) => void
+  onConversionSettingsChange: (settings: ConversionSettings) => void
   onRenderModeChange: (mode: RenderMode) => void
   onGridToggle: () => void
   onSoundToggle: () => void
@@ -47,6 +51,7 @@ function Divider() {
 export function ControlPanel({
   gridDimensions,
   messiness,
+  conversionSettings,
   renderMode,
   showGrid,
   isBuilding,
@@ -55,6 +60,7 @@ export function ControlPanel({
   totalPieces,
   onGridDimensionsChange,
   onMessinessChange,
+  onConversionSettingsChange,
   onRenderModeChange,
   onGridToggle,
   onSoundToggle,
@@ -80,6 +86,13 @@ export function ControlPanel({
       <GridDimensionsPicker
         value={gridDimensions}
         onChange={onGridDimensionsChange}
+      />
+
+      <Divider />
+
+      <ConversionControls
+        value={conversionSettings}
+        onChange={onConversionSettingsChange}
       />
 
       <Divider />

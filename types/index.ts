@@ -29,6 +29,23 @@ export type GridDimensions = {
   height: GridDimension
 }
 
+export type ConversionProfile = 'avatar' | 'pixel-art' | 'photo'
+export type ImageFit = 'contain' | 'cover'
+
+export type ImageFraming = {
+  fit: ImageFit
+  /** Normalized crop position. 0 is left/top, 1 is right/bottom. */
+  positionX: number
+  positionY: number
+  /** 1–3× zoom relative to the selected fit. */
+  zoom: number
+}
+
+export type ConversionSettings =
+  | { profile: 'avatar'; framing: ImageFraming; maxColors: number }
+  | { profile: 'pixel-art'; framing: ImageFraming }
+  | { profile: 'photo'; framing: ImageFraming }
+
 /** Whether cells render as a flat square or a square with a raised circular stud. */
 export type RenderMode = 'flat' | 'stud'
 

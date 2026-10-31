@@ -154,7 +154,8 @@ describe('Page component', () => {
       expect.any(File),
       32,
       32,
-      0
+      0,
+      expect.objectContaining({ profile: 'photo' })
     )
     expect(global.URL.createObjectURL).toHaveBeenCalled()
   })
@@ -178,7 +179,13 @@ describe('Page component', () => {
     expect(fetchImageAsFile).toHaveBeenCalledWith(
       'https://example.com/image.png'
     )
-    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 32, 0)
+    expect(mockProcessor.process).toHaveBeenCalledWith(
+      mockFile,
+      32,
+      32,
+      0,
+      expect.objectContaining({ profile: 'photo' })
+    )
     expect(input).toHaveValue('')
   })
 
@@ -218,11 +225,48 @@ describe('Page component', () => {
       expect.any(File),
       64,
       64,
-      0
+      0,
+      expect.objectContaining({ profile: 'photo' })
     )
 
     mockCanvas.state.gridDimensions = { width: 64, height: 64 }
     rerender(<Page />)
+  })
+
+  test('switches to Avatar and reprocesses with a configurable colour cap', async () => {
+    const { container } = render(<Page />)
+    const file = new File(['portrait'], 'portrait.png', { type: 'image/png' })
+    const input = container.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement
+
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Avatar / Logo' }))
+    expect(mockCanvas.setMessiness).toHaveBeenCalledWith(0)
+    expect(mockProcessor.process).toHaveBeenLastCalledWith(
+      file,
+      32,
+      32,
+      0,
+      expect.objectContaining({ profile: 'avatar', maxColors: 4 })
+    )
+
+    fireEvent.change(
+      screen.getByRole('combobox', { name: 'Maximum colours' }),
+      {
+        target: { value: '6' },
+      }
+    )
+    expect(mockProcessor.process).toHaveBeenLastCalledWith(
+      file,
+      32,
+      32,
+      0,
+      expect.objectContaining({ profile: 'avatar', maxColors: 6 })
+    )
   })
 
   test('handles keyboard shortcuts', () => {
@@ -338,7 +382,13 @@ describe('Page component', () => {
     expect(fetchImageAsFile).toHaveBeenCalledWith(
       'https://example.com/pasted.jpg'
     )
-    expect(mockProcessor.process).toHaveBeenCalledWith(mockFile, 32, 32, 0)
+    expect(mockProcessor.process).toHaveBeenCalledWith(
+      mockFile,
+      32,
+      32,
+      0,
+      expect.objectContaining({ profile: 'photo' })
+    )
   })
 
   test('toggles mobile stats panel', async () => {

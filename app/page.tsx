@@ -37,7 +37,8 @@ import { cn } from '@/lib/cn'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
 import { fetchImageAsFile } from '@/lib/imageLoader'
 import { computePieceCounts } from '@/lib/imageProcessor'
-import type { GridDimensions } from '@/types'
+import type { ConversionSettings, GridDimensions } from '@/types'
+import { defaultConversionSettings } from '@/lib/imageProcessor'
 import { ToyBrick } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -96,6 +97,8 @@ export default function Page() {
   const [urlInput, setUrlInput] = useState('')
   const [isLoadingUrl, setIsLoadingUrl] = useState(false)
   const [urlError, setUrlError] = useState<string | null>(null)
+  const [conversionSettings, setConversionSettings] =
+    useState<ConversionSettings>(() => defaultConversionSettings())
 
   const hasImage = canvas.state.pixelMatrix.length > 0
 
@@ -132,7 +135,8 @@ export default function Page() {
         sourceFileRef.current,
         dims.width,
         dims.height,
-        canvas.state.messiness
+        canvas.state.messiness,
+        conversionSettings
       )
     }
   }
@@ -145,7 +149,29 @@ export default function Page() {
         sourceFileRef.current,
         dims.width,
         dims.height,
-        value
+        value,
+        conversionSettings
+      )
+    }
+  }
+
+  const handleConversionSettingsChange = (settings: ConversionSettings) => {
+    setConversionSettings(settings)
+    const messiness =
+      settings.profile === conversionSettings.profile
+        ? canvas.state.messiness
+        : 0
+    if (settings.profile !== conversionSettings.profile) {
+      canvas.setMessiness(messiness)
+    }
+    if (sourceFileRef.current) {
+      const dims = canvas.state.gridDimensions
+      void processor.process(
+        sourceFileRef.current,
+        dims.width,
+        dims.height,
+        messiness,
+        settings
       )
     }
   }
@@ -153,6 +179,7 @@ export default function Page() {
   const handleReset = () => {
     canvas.reset()
     processor.reset()
+    setConversionSettings(defaultConversionSettings())
     sourceFileRef.current = null
     setOriginalSrc((prev) => {
       if (prev) URL.revokeObjectURL(prev)
@@ -266,11 +293,17 @@ export default function Page() {
         file,
         dims.width,
         dims.height,
-        canvas.state.messiness
+        canvas.state.messiness,
+        conversionSettings
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [processor.process, canvas.state.gridDimensions, canvas.state.messiness]
+    [
+      processor.process,
+      canvas.state.gridDimensions,
+      canvas.state.messiness,
+      conversionSettings,
+    ]
   )
 
   // ── Global paste listener — detect image URLs ─────────────────────────────
@@ -410,6 +443,7 @@ export default function Page() {
                 <ControlPanel
                   gridDimensions={canvas.state.gridDimensions}
                   messiness={canvas.state.messiness}
+                  conversionSettings={conversionSettings}
                   renderMode={canvas.state.renderMode}
                   showGrid={canvas.state.showGrid}
                   isBuilding={canvas.state.isBuilding}
@@ -418,6 +452,7 @@ export default function Page() {
                   totalPieces={totalPieces}
                   onGridDimensionsChange={handleGridDimensionsChange}
                   onMessinessChange={handleMessinessChange}
+                  onConversionSettingsChange={handleConversionSettingsChange}
                   onRenderModeChange={canvas.setRenderMode}
                   onGridToggle={canvas.toggleGrid}
                   onSoundToggle={sound.toggleSound}
@@ -450,6 +485,7 @@ export default function Page() {
               <ControlPanel
                 gridDimensions={canvas.state.gridDimensions}
                 messiness={canvas.state.messiness}
+                conversionSettings={conversionSettings}
                 renderMode={canvas.state.renderMode}
                 showGrid={canvas.state.showGrid}
                 isBuilding={canvas.state.isBuilding}
@@ -458,6 +494,7 @@ export default function Page() {
                 totalPieces={totalPieces}
                 onGridDimensionsChange={handleGridDimensionsChange}
                 onMessinessChange={handleMessinessChange}
+                onConversionSettingsChange={handleConversionSettingsChange}
                 onRenderModeChange={canvas.setRenderMode}
                 onGridToggle={canvas.toggleGrid}
                 onSoundToggle={sound.toggleSound}

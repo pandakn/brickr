@@ -11,9 +11,14 @@
  *  computePieceCounts() LegoColor[][] → PieceCount[]  (stats)
  */
 
-import type { GridDimension, LegoColor, PieceCount } from '@/types'
+import type {
+  ConversionSettings,
+  GridDimension,
+  LegoColor,
+  PieceCount,
+} from '@/types'
 import { LEGO_PALETTE } from './legoColors'
-import { nearestLegoColor } from './colorMapping'
+import { deltaE, nearestLegoColor } from './colorMapping'
 
 // ─── PRNG — mulberry32 ────────────────────────────────────────────────────
 //
@@ -54,8 +59,8 @@ function deriveMatrixSeed(matrix: LegoColor[][]): number {
  * Resize `file` to a `width × height` grid using the browser's Canvas API
  * and return the raw `ImageData`.
  *
- * The image is stretched to fill (no letterboxing), giving the user full
- * control over the output aspect ratio.
+ * Aspect ratio is preserved using the selected contain/cover frame, crop
+ * position, and zoom settings.
  *
  * Transparent pixels are alpha-composited against white so the colour-mapping
  * step always receives fully-opaque RGB values.
@@ -63,25 +68,42 @@ function deriveMatrixSeed(matrix: LegoColor[][]): number {
 export async function resizeImage(
   file: File,
   width: GridDimension,
-  height: GridDimension
+  height: GridDimension,
+  settings: ConversionSettings = defaultConversionSettings()
 ): Promise<ImageData> {
   const bitmap = await createImageBitmap(file)
+  try {
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
 
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('Could not acquire a 2D canvas context')
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Could not acquire a 2D canvas context')
+    const placement = calculateImagePlacement({
+      sourceWidth: bitmap.width,
+      sourceHeight: bitmap.height,
+      targetWidth: width,
+      targetHeight: height,
+      settings: settings.framing,
+    })
 
-  // White background so transparent areas map to White rather than Black
-  ctx.fillStyle = '#FFFFFF'
-  ctx.fillRect(0, 0, width, height)
-
-  ctx.drawImage(bitmap, 0, 0, width, height)
-  bitmap.close()
-
-  return ctx.getImageData(0, 0, width, height)
+    // White background so transparent areas map to White rather than Black.
+    ctx.fillStyle = '#FFFFFF'
+    ctx.fillRect(0, 0, width, height)
+    ctx.imageSmoothingEnabled = settings.profile !== 'pixel-art'
+    if (ctx.imageSmoothingEnabled) ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(
+      bitmap,
+      placement.left,
+      placement.top,
+      placement.width,
+      placement.height
+    )
+    return ctx.getImageData(0, 0, width, height)
+  } finally {
+    bitmap.close()
+  }
 }
 
 /**
@@ -142,7 +164,8 @@ export function applyMessiness(
  */
 export function buildPixelMatrix(
   imageData: ImageData,
-  messiness: number
+  messiness: number,
+  settings: ConversionSettings = defaultConversionSettings()
 ): LegoColor[][] {
   const { width, height, data } = imageData
   const matrix: LegoColor[][] = []
@@ -166,7 +189,101 @@ export function buildPixelMatrix(
     matrix.push(rowArray)
   }
 
-  return applyMessiness(matrix, messiness)
+  const messy = applyMessiness(matrix, messiness)
+  return settings.profile === 'avatar'
+    ? limitMatrixColors(messy, settings.maxColors)
+    : messy
+}
+
+export function defaultConversionSettings(): ConversionSettings {
+  return {
+    profile: 'photo',
+    framing: { fit: 'contain', zoom: 1, positionX: 0.5, positionY: 0.5 },
+  }
+}
+
+export function calculateImagePlacement({
+  sourceWidth,
+  sourceHeight,
+  targetWidth,
+  targetHeight,
+  settings,
+}: {
+  sourceWidth: number
+  sourceHeight: number
+  targetWidth: number
+  targetHeight: number
+  settings: ConversionSettings['framing']
+}): { left: number; top: number; width: number; height: number } {
+  const scaleX = targetWidth / sourceWidth
+  const scaleY = targetHeight / sourceHeight
+  const fitScale =
+    settings.fit === 'cover'
+      ? Math.max(scaleX, scaleY)
+      : Math.min(scaleX, scaleY)
+  const scale = fitScale * clamp(settings.zoom, 1, 3)
+  const width = sourceWidth * scale
+  const height = sourceHeight * scale
+  const overflowX = Math.max(0, width - targetWidth)
+  const overflowY = Math.max(0, height - targetHeight)
+
+  return {
+    left: overflowX
+      ? -overflowX * clamp(settings.positionX, 0, 1)
+      : (targetWidth - width) / 2,
+    top: overflowY
+      ? -overflowY * clamp(settings.positionY, 0, 1)
+      : (targetHeight - height) / 2,
+    width,
+    height,
+  }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : min
+}
+
+function limitMatrixColors(
+  matrix: LegoColor[][],
+  requestedLimit: number
+): LegoColor[][] {
+  const limit = Math.round(clamp(requestedLimit, 2, 8))
+  const counts = new Map<string, { color: LegoColor; count: number }>()
+  for (const row of matrix) {
+    for (const color of row) {
+      const current = counts.get(color.id)
+      if (current) current.count++
+      else counts.set(color.id, { color, count: 1 })
+    }
+  }
+
+  const paletteOrder = new Map(
+    LEGO_PALETTE.map((color, index) => [color.id, index])
+  )
+  const allowed = [...counts.values()]
+    .sort(
+      (a, b) =>
+        b.count - a.count ||
+        (paletteOrder.get(a.color.id) ?? 0) -
+          (paletteOrder.get(b.color.id) ?? 0)
+    )
+    .slice(0, limit)
+    .map(({ color }) => color)
+
+  return matrix.map((row) =>
+    row.map((color) => {
+      let nearest = allowed[0]
+      let bestDistance = deltaE(color.lab, nearest.lab)
+      for (const candidate of allowed.slice(1)) {
+        const distance = deltaE(color.lab, candidate.lab)
+        if (distance < bestDistance) {
+          nearest = candidate
+          bestDistance = distance
+        }
+      }
+      return nearest
+    })
+  )
 }
 
 /**
