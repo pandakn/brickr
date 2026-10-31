@@ -1,5 +1,7 @@
-import type { PieceCount } from '@/types'
-import { render, screen } from '@testing-library/react'
+import type { GridDimensions, LegoColor, PieceCount } from '@/types'
+import { computePieceCounts } from '@/lib/imageProcessor'
+import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, test, vi } from 'vitest'
 import { StatsPanel } from './StatsPanel'
 
@@ -8,6 +10,33 @@ vi.mock('@/lib/exportCanvas', () => ({
   exportAsImage: vi.fn(),
   exportBuildGuide: vi.fn(),
 }))
+
+const GRID: GridDimensions = { width: 32, height: 32 }
+
+const red: LegoColor = {
+  id: 'red',
+  name: 'Bright Red',
+  hex: '#FF0000',
+  lab: [0, 0, 0],
+}
+const blue: LegoColor = {
+  id: 'blue',
+  name: 'Bright Blue',
+  hex: '#0000FF',
+  lab: [0, 0, 0],
+}
+
+/** Mirrors app/page.tsx: counts always come from the committed matrix. */
+function statsProps(matrix: (LegoColor | null)[][]) {
+  return {
+    pieceCounts: computePieceCounts(matrix),
+    isBuilding: false,
+    buildProgress: 0,
+    matrix,
+    gridDimensions: GRID,
+    renderMode: 'stud' as const,
+  }
+}
 
 describe('StatsPanel', () => {
   const mockPieceCounts: PieceCount[] = [
@@ -193,5 +222,78 @@ describe('StatsPanel', () => {
     )
     expect(screen.queryByTestId('export-image-button')).not.toBeInTheDocument()
     expect(screen.queryByTestId('export-guide-button')).not.toBeInTheDocument()
+  })
+
+  test('excludes empty cells from totals, colour counts and build time', () => {
+    // 4x4 grid with two removed cells → 14 physical bricks, not 16
+    const matrix: (LegoColor | null)[][] = [
+      [red, red, red, red],
+      [red, red, red, red],
+      [red, red, red, red],
+      [red, blue, null, null],
+    ]
+
+    render(<StatsPanel {...statsProps(matrix)} />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('14')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('13')
+    expect(screen.getByTestId('color-count-blue')).toHaveTextContent('1')
+    // 14 * 15s / 60s = 3.5 → rounded to 4 minutes
+    expect(screen.getByTestId('build-time')).toHaveTextContent(
+      '≈ 4 min to build'
+    )
+  })
+
+  test('updates totals when a brick is removed and restores them on undo', () => {
+    const before: (LegoColor | null)[][] = [
+      [red, red],
+      [red, blue],
+    ]
+    const { rerender } = render(<StatsPanel {...statsProps(before)} />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('4')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('3')
+
+    // Remove one red cell
+    const afterRemoval: (LegoColor | null)[][] = [
+      [red, red],
+      [null, blue],
+    ]
+    rerender(<StatsPanel {...statsProps(afterRemoval)} />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('3')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('2')
+    expect(screen.getByTestId('color-count-blue')).toHaveTextContent('1')
+    // 3 * 15s / 60s = 0.75 → rounded to 1 minute
+    expect(screen.getByTestId('build-time')).toHaveTextContent(
+      '≈ 1 min to build'
+    )
+
+    // Restore it — every number returns to its original value
+    rerender(<StatsPanel {...statsProps(before)} />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('4')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('3')
+    expect(screen.getByTestId('build-time')).toHaveTextContent(
+      '≈ 1 min to build'
+    )
+  })
+
+  test('exports the same committed matrix that produced the stats', () => {
+    const matrix: (LegoColor | null)[][] = [
+      [red, null],
+      [null, blue],
+    ]
+
+    render(<StatsPanel {...statsProps(matrix)} />)
+
+    // 2 physical bricks despite a 4-cell grid
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('2')
+
+    fireEvent.click(screen.getByTestId('export-image-button'))
+    expect(exportAsImage).toHaveBeenCalledWith(matrix, 'stud', 16)
+
+    fireEvent.click(screen.getByTestId('export-guide-button'))
+    expect(exportBuildGuide).toHaveBeenCalledWith(matrix, GRID)
   })
 })

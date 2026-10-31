@@ -2,6 +2,7 @@
 
 import { Volume2, VolumeX } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { estimateBuildMinutes } from '@/lib/buildEstimate'
 import type { GridDimensions, RenderMode } from '@/types'
 import { GridDimensionsPicker } from './GridDimensionsPicker'
 import { MessinessSlider } from './MessinessSlider'
@@ -16,6 +17,12 @@ export interface ControlPanelProps {
   soundEnabled: boolean
   /** True once an image has been loaded and the matrix is ready. */
   hasImage: boolean
+  /**
+   * Physical pieces in the current committed matrix (empty cells excluded).
+   * Only used once `hasImage` is true — before that the panel shows the
+   * grid-capacity estimate instead.
+   */
+  totalPieces: number
   onGridDimensionsChange: (dims: GridDimensions) => void
   onMessinessChange: (v: number) => void
   onRenderModeChange: (mode: RenderMode) => void
@@ -23,14 +30,6 @@ export interface ControlPanelProps {
   onSoundToggle: () => void
   onBuild: () => void
   onReset: () => void
-}
-
-function estimatedPieces(dims: GridDimensions): number {
-  return dims.width * dims.height
-}
-
-function estimatedMinutes(dims: GridDimensions): number {
-  return Math.round((dims.width * dims.height * 15) / 60)
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -53,6 +52,7 @@ export function ControlPanel({
   isBuilding,
   soundEnabled,
   hasImage,
+  totalPieces,
   onGridDimensionsChange,
   onMessinessChange,
   onRenderModeChange,
@@ -61,8 +61,11 @@ export function ControlPanel({
   onBuild,
   onReset,
 }: ControlPanelProps) {
-  const pieces = estimatedPieces(gridDimensions)
-  const minutes = estimatedMinutes(gridDimensions)
+  // Before generation we can only estimate from grid capacity. Afterwards the
+  // numbers come from the committed matrix, so removed cells stop counting.
+  const capacity = gridDimensions.width * gridDimensions.height
+  const pieces = hasImage ? totalPieces : capacity
+  const minutes = estimateBuildMinutes(pieces)
 
   return (
     <div
@@ -169,13 +172,15 @@ export function ControlPanel({
           data-testid="pieces-estimate"
           className="font-mono text-[10px] tracking-widest text-sand-400 uppercase"
         >
-          ~{pieces.toLocaleString()} pieces
+          {hasImage ? '' : '~'}
+          {pieces.toLocaleString()} pieces
         </span>
         <span
           data-testid="minutes-estimate"
           className="font-mono text-[10px] tracking-widest text-sand-400 uppercase"
         >
-          ~{minutes} min
+          {hasImage ? '≈ ' : '~'}
+          {minutes} min
         </span>
       </div>
 

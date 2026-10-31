@@ -4,6 +4,7 @@ import { useIsMobile } from '@/hooks/useIsMobile'
 import { useSound } from '@/hooks/useSound'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
 import { fetchImageAsFile } from '@/lib/imageLoader'
+import type { LegoColor, PieceCount } from '@/types'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import Page from './page'
@@ -368,5 +369,100 @@ describe('Page component', () => {
     expect(
       screen.getByTestId('color-breakdown-empty-state')
     ).toBeInTheDocument()
+  })
+
+  // ── Count consistency with the edited matrix (issue #1) ───────────────────
+
+  const red: LegoColor = {
+    id: 'red',
+    name: 'Bright Red',
+    hex: '#FF0000',
+    lab: [0, 0, 0],
+  }
+  const blue: LegoColor = {
+    id: 'blue',
+    name: 'Bright Blue',
+    hex: '#0000FF',
+    lab: [0, 0, 0],
+  }
+
+  test('derives piece counts from the edited matrix, not the processor', () => {
+    const initial: (LegoColor | null)[][] = [
+      [red, red, red, red],
+      [red, red, red, red],
+    ]
+    mockCanvas.state.pixelMatrix = initial
+    // Stale processor result — must be ignored in favour of the matrix
+    const staleCounts: PieceCount[] = [
+      { color: red, count: 99, percentage: 100 },
+    ]
+    mockProcessor.pieceCounts = staleCounts
+
+    const { rerender } = render(<Page />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('8')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('8')
+    // 8 * 15s / 60s = 2 minutes
+    expect(screen.getByTestId('build-time')).toHaveTextContent(
+      '≈ 2 min to build'
+    )
+
+    // Removing one brick updates the total and that colour's count
+    const edited: (LegoColor | null)[][] = [
+      [red, red, red, red],
+      [null, red, red, red],
+    ]
+    mockCanvas.state.pixelMatrix = edited
+    rerender(<Page />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('7')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('7')
+
+    // Restoring it restores both counts
+    mockCanvas.state.pixelMatrix = initial
+    rerender(<Page />)
+
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('8')
+    expect(screen.getByTestId('color-count-red')).toHaveTextContent('8')
+  })
+
+  test('control panel shows grid capacity before generation and actual pieces after', () => {
+    const { rerender } = render(<Page />)
+
+    // No image yet → 32 × 32 capacity estimate
+    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent(
+      '~1,024 pieces'
+    )
+
+    // Regenerated pattern with three physical bricks
+    mockCanvas.state.pixelMatrix = [[red, red, blue, null]]
+    rerender(<Page />)
+
+    expect(screen.getByTestId('pieces-estimate')).toHaveTextContent('3 pieces')
+    expect(screen.getByTestId('pieces-estimate')).not.toHaveTextContent('~')
+    // 3 * 15s / 60s = 0.75 → 1 minute
+    expect(screen.getByTestId('minutes-estimate')).toHaveTextContent('≈ 1 min')
+  })
+
+  test('exports and stats share the same committed matrix', () => {
+    const matrix: (LegoColor | null)[][] = [
+      [red, null],
+      [null, blue],
+    ]
+    mockCanvas.state.pixelMatrix = matrix
+
+    render(<Page />)
+
+    // Two physical bricks even though the grid has four cells
+    expect(screen.getByTestId('total-pieces')).toHaveTextContent('2')
+
+    fireEvent.click(screen.getByTestId('export-image-button'))
+    expect(exportAsImage).toHaveBeenCalledWith(matrix, 'stud', 16)
+
+    fireEvent.click(screen.getByTestId('export-guide-button'))
+    expect(exportBuildGuide).toHaveBeenCalledWith(matrix, {
+      width: 32,
+      height: 32,
+    })
   })
 })

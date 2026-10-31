@@ -38,6 +38,28 @@ describe('imageProcessor', () => {
       const counts = computePieceCounts(matrix)
       expect(counts[0].color.name).toBe('Bright Blue')
     })
+
+    test('excludes empty cells from totals and percentages', () => {
+      const matrix: (LegoColor | null)[][] = [
+        [red, null, null],
+        [null, blue, null],
+        [null, null, null],
+      ]
+      const counts = computePieceCounts(matrix)
+
+      expect(counts).toHaveLength(2)
+      expect(counts.reduce((sum, count) => sum + count.count, 0)).toBe(2)
+      expect(counts.map((count) => count.percentage)).toEqual([50, 50])
+    })
+
+    test('returns no counts for a fully empty pattern', () => {
+      expect(
+        computePieceCounts([
+          [null, null],
+          [null, null],
+        ])
+      ).toEqual([])
+    })
   })
 
   describe('applyMessiness', () => {

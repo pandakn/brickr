@@ -2,12 +2,18 @@
 
 import { useMemo } from 'react'
 import { cn } from '@/lib/cn'
+import { estimateBuildMinutes } from '@/lib/buildEstimate'
 import type { GridDimensions, LegoColor, PieceCount, RenderMode } from '@/types'
 import { exportAsImage, exportBuildGuide } from '@/lib/exportCanvas'
 import { ColorBreakdown } from './ColorBreakdown'
 import { Kbd } from '@/components/ui/kbd'
 
 export interface StatsPanelProps {
+  /**
+   * Per-colour counts for the CURRENT committed matrix, derived via
+   * `computePieceCounts(matrix)` in `app/page.tsx`. Empty cells never appear
+   * here, so totals and build time only ever describe physical bricks.
+   */
   pieceCounts: PieceCount[]
   isBuilding: boolean
   buildProgress: number // 0–1
@@ -30,7 +36,7 @@ export function StatsPanel({
     [pieceCounts]
   )
 
-  const buildTimeMin = Math.round((totalPieces * 15) / 60)
+  const buildTimeMin = estimateBuildMinutes(totalPieces)
   const canExport = matrix !== null && matrix.length > 0
 
   const funMessage = useMemo(() => {
